@@ -1,84 +1,81 @@
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Set;
+import java.io.FileInputStream;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
-import org.javacord.api.entity.channel.ChannelCategory;
-import org.javacord.api.entity.channel.ChannelCategoryBuilder;
-import org.javacord.api.entity.channel.ServerVoiceChannel;
-import org.javacord.api.entity.channel.ServerVoiceChannelBuilder;
-import org.javacord.api.entity.channel.TextChannel;
-import org.javacord.api.entity.channel.VoiceChannel;
-import org.javacord.api.entity.intent.Intent;
-import org.javacord.api.entity.message.MessageBuilder;
+import org.javacord.api.entity.message.component.ActionRow;
 import org.javacord.api.entity.message.component.Button;
-import org.javacord.api.entity.permission.RoleBuilder;
-import org.javacord.api.entity.server.Server;
-import org.javacord.api.event.Event;
-import org.javacord.api.interaction.SlashCommand;
-
-import kotlin.collections.builders.SetBuilder;
+import org.javacord.api.interaction.SlashCommandBuilder;
+import org.javacord.api.interaction.SlashCommandInteraction;
 
 public class Main {
-        static String token = "MTEyNTg4MjIxNDc0NDM0MjcwOA.GtAE-i.cDNZRioZWCtjY9kSdPFMN3rDUw6DFf1nU02Ik0";
+    static Locale locale;
+    static ResourceBundle bundle;
+    static Properties properties;
 
-        static Set<String> countries = Set.of("Russia 🇷🇺", "USA 🇺🇸", "North Korea 🇰🇵", "China 🇨🇳", "Iran 🇮🇷", "Germany 🇩🇪");
-
-        public static void main(String[] args) {
-                // Log the bot in
-                DiscordApi api = new DiscordApiBuilder()
-                                .setToken(token)
-                                .addIntents(Intent.MESSAGE_CONTENT)
-                                .login().join();
-
-                // Get link to invite bot
-                System.out.println(api.createBotInvite(org.javacord.api.entity.permission.Permissions.fromBitmask(8)));
-
-
-                SlashCommand command = SlashCommand.with("start", "Creates a game")
-                                .createGlobal(api)
-                                .join();
-
-
-                api.addSlashCommandCreateListener(event -> {
-                        if (event.getSlashCommandInteraction().getCommandName().equals("start")) {
-                                System.out.println("start logged.");
-
-                                Server server = event.getInteraction().getServer().get();
-
-                                new RoleBuilder(server).setName("Russia RU").setColor(Color.BLUE).create();
-
-                                ChannelCategory category = new ChannelCategoryBuilder(server).setName("Global Domination Game").create().join();
-
-                                for (String str: countries) {
-                                        new ServerVoiceChannelBuilder(server).setCategory(category).setName(str).create();
-                                }
-
-                                api.wait(0, 0);
-
-                                System.out.println("Created chs:");
-                                category.getChannels().forEach(ch -> {System.out.println(ch);});
-
-                                event.getSlashCommandInteraction().createImmediateResponder().setContent("Game started.").respond();
-                                event.getSlashCommandInteraction().getChannel().ifPresent(channel -> {
-                                        new MessageBuilder().addActionRow(Button.danger("deleteChannels", "delete channels")).send(channel).join().addButtonClickListener(
-                                                buttonEvent -> {
-                                                        if (buttonEvent.getButtonInteraction().getCustomId().equals("deleteChannels")) {
-                                                                for (long id: created_voices) {
-                                                                        server.getVoiceChannelById(id).ifPresent(vc -> {
-                                                                                vc.delete("End of game.");
-                                                                        });
-                                                                }
-
-                                                                category.delete("End of game.");
-                                                                buttonEvent.getButtonInteraction().createImmediateResponder().setContent("GG WP! :D").respond();
-                                                        }
-                                                }
-                                        );
-                                });
-                        }
-                });
-
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.print("Usage: java <name-of-executable> <lang>");
+            return;
         }
+
+        try {
+            bundle = ResourceBundle.getBundle("languages/lang", new Locale.Builder().setLanguage(args[0]).build());
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return;
+        }
+
+        properties = new Properties();
+        try (FileInputStream fin = new FileInputStream("settings.properties")) {
+            properties.load(fin);
+            startBot(properties.getProperty("token"));
+        } catch (Throwable e) {
+            System.err.println("Error with settings.properties");
+            e.printStackTrace();
+            return;
+        }
+    }
+
+    public static void startBot(String token) {
+        // Log in the bot
+        DiscordApi api = new DiscordApiBuilder().setToken(token).login().join();
+
+        new SlashCommandBuilder().setName("info").setDescription(bundle.getString("info_description"))
+                .createGlobal(api);
+        new SlashCommandBuilder().setName("start").setDescription(bundle.getString("start_description"))
+                .createGlobal(api);
+
+        api.addSlashCommandCreateListener(event -> {
+            SlashCommandInteraction interaction = event.getSlashCommandInteraction();
+            if (interaction.getCommandName().equals("info")) {
+                interaction.createImmediateResponder().setContent(bundle.getString("info_message")).respond();
+            } else if (interaction.getCommandName().equals("start")) {
+                interaction.respondLater().thenAccept(startCommandInteraction -> {
+                    startCommandInteraction.setContent(bundle.getString("start_wait_message")).update();
+
+                    interaction.createFollowupMessageBuilder()
+                        .setContent(bundle.getString("start_get_users"))
+                        .addComponents(ActionRow.of(Button.primary("start_game_button", bundle.getString("start_game_button"))))
+                        .send()
+                        .thenAccept(
+                            msg -> {
+                                msg.addReaction(bundle.getString("ru_emoji"));
+                                msg.addReaction(bundle.getString("us_emoji"));
+                                msg.addReaction(bundle.getString("de_emoji"));
+                                msg.addReaction(bundle.getString("cn_emoji"));
+                                msg.addReaction(bundle.getString("ir_emoji"));
+                                msg.addReaction(bundle.getString("kp_emoji"));
+
+                                msg.addButtonClickListener(buttonClick -> {
+                                    buttonClick
+                                });
+                            }
+                        );
+                });
+            }
+        });
+    }
 }
