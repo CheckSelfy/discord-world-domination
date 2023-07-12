@@ -76,62 +76,21 @@ public class Main {
                                     .thenCompose((Void v) -> message.getLatestInstance()); // TODO: bad reforwarding
                                                                                            // message имхо
                         })
+                        .thenCompose(message -> updatePlayersInfo(message))
                         .thenAccept(message -> {
-                            message.addReactionAddListener(reactionHappeded -> updatePlayersInfo(message)); // TODO: double listeners
+                            message.addReactionAddListener(reactionHappeded -> updatePlayersInfo(message)); // TODO:
+                                                                                                            // double
+                                                                                                            // listeners
                             message.addReactionRemoveListener(reactionHappeded -> updatePlayersInfo(message));
-                        });
+                        }).join();
                 ;
 
-                // interaction.respondLater()
-                // .thenRun(() -> {
-                // interaction.createFollowupMessageBuilder()
-                // .setContent(bundle.getString("start_wait_message"))
-                // .addComponents(ActionRow
-                // .of(Button.primary("start_game_button",
-                // bundle.getString("start_game_button"))))
-                // .send()
-                // .thenAccept(
-                // msg -> {
-                // List<CompletableFuture<Void>> futures = new ArrayList<>();
-                // for (String emoji_name : Constants.COUNTRIES.values())
-                // futures.add(msg.addReaction(bundle.getString(emoji_name)));
-                // // futures.add(msg.addReaction(bundle.getString("random_emoji"))); //
-                // // random dice
-
-                // CompletableFuture
-                // .allOf(futures.toArray(new CompletableFuture[futures.size()]))
-                // .thenRun(() -> {
-                // System.out.println("11111");
-
-                // updatePlayersInfo(msg).join();
-                // // .thenApply(message -> message.createUpdater()
-                // // .setContent(
-                // // bundle.getString("start_get_users"))
-                // // .applyChanges())
-                // // .join();
-
-                // System.out.println("22222");
-
-                // msg.addReactionAddListener(reaction -> {
-                // updatePlayersInfo(reaction.getMessage().get()).join();
-                // });
-
-                // msg.addButtonClickListener(buttonClick -> {
-                // // ButtonInteraction buttonInteraction =
-                // // buttonClick.getButtonInteraction();
-                // // buttonInteraction.respondLater();
-                // });
-
-                // });
-
-                // });
-                // });
             }
         });
 
     }
 
-    static public CompletableFuture<Message> updatePlayersInfo(Message msg) {
+    static public CompletableFuture<Message> updatePlayersInfo(Message msg) { // too expensive
         List<Pair<String, String>> newList = Collections.synchronizedList(new ArrayList<>(Constants.COUNTRIES.size()));
 
         List<CompletableFuture<Void>> futures = new ArrayList<>(Constants.COUNTRIES.size());
@@ -145,8 +104,8 @@ public class Main {
                                 System.out.println(bundle.getString(countryName) + " future started");
                                 List<String> usersNames = new ArrayList<>();
                                 for (User user : usersSet)
-                                    // if (!user.isYourself())
-                                    usersNames.add(user.getMentionTag());
+                                    if (!user.isYourself())
+                                        usersNames.add(user.getMentionTag());
                                 newList.add(new Pair<String, String>(
                                         bundle.getString(countryName) + " " + bundle.getString(countryEmoji),
                                         String.join(", ", usersNames)));
@@ -166,48 +125,5 @@ public class Main {
                     return msg.createUpdater().setContent(bundle.getString("start_get_users")).setEmbed(builder)
                             .applyChanges();
                 });
-        // CompletableFuture.allOf(futures.toArray(new
-        // CompletableFuture[futures.size()])).(
-        // () -> {
-        // for (Pair<String, String> entry : newList) {
-        // builder.addField(entry.getFirst(), entry.getSecond());
-        // }
-        // msg.createUpdater().setEmbed(builder).applyChanges();
-        // }
-        // );
-
     }
-
-    // Result: game was started or not.
-    // static public void startGame(ButtonInteraction buttonInteraction) {
-    //     Message msg = buttonInteraction.getMessage();
-    //     List<Pair<String, String>> newList = Collections.synchronizedList(new ArrayList<>(Constants.COUNTRIES.size()));
-
-    //     List<CompletableFuture<Void>> futures = new ArrayList<>(Constants.COUNTRIES.size());
-    //     for (Map.Entry<String, String> entry : Constants.COUNTRIES.entrySet()) {
-    //         String countryName = entry.getKey();
-    //         String countryEmoji = entry.getValue();
-
-    //         futures.add(
-    //                 msg.getReactionByEmoji(bundle.getString(countryEmoji)).get().getUsers().thenAccept(
-    //                         usersSet -> {
-    //                             List<String> usersNames = new ArrayList<>();
-    //                             for (User user : usersSet)
-    //                                 if (!user.isYourself())
-    //                                     usersNames.add(user.getMentionTag());
-    //                             newList.add(new Pair<String, String>(
-    //                                     bundle.getString(countryName) + " " + bundle.getString(countryEmoji),
-    //                                     String.join(", ", usersNames)));
-    //                         }));
-    //     }
-
-    //     CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).join(); // ????!?!?!?
-
-    //     EmbedBuilder builder = new EmbedBuilder().setTitle(bundle.getString("game_name"))
-    //             .setAuthor("Artyom T, @CheckSelf");
-    //     for (Pair<String, String> entry : newList) {
-    //         builder.addField(entry.getFirst(), entry.getSecond());
-    //     }
-    // }
-
 }
