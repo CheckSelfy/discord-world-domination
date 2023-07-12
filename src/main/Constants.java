@@ -5,18 +5,19 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 public class Constants {
     static final ResourceBundle bundle;
     static final Properties properties;
 
-    final static Set<String> COUNTRIES = Set.of(
-        "ru", "us", "de", "cn", "ir", "kp"
-    );
+    final static String[] COUNTRIES = {"ru", "us", "de", "cn", "ir", "kp"};
+    final static String[] FULL_COUNTRIES_NAME;
+    final static String[] EMOJIS_COUNTRY;
 
     final static Map<String, String> COUNTRY_TO_EMOJI;
     final static Map<String, String> EMOJI_TO_COUNTRY;
+
+    final static int COUNTRIES_COUNT = COUNTRIES.length;
 
     static {
         properties = new Properties();
@@ -34,15 +35,17 @@ public class Constants {
             throw e;
         }
 
-        COUNTRY_TO_EMOJI = new HashMap<>(COUNTRIES.size());
-        EMOJI_TO_COUNTRY = new HashMap<>(COUNTRIES.size());
+        COUNTRY_TO_EMOJI = new HashMap<>(COUNTRIES_COUNT);
+        EMOJI_TO_COUNTRY = new HashMap<>(COUNTRIES_COUNT);
+        EMOJIS_COUNTRY = new String[COUNTRIES_COUNT];
+        FULL_COUNTRIES_NAME = new String[COUNTRIES_COUNT];
+        int lastAdded = -1;
         for (String country: COUNTRIES) {
             String unicodeEmoji = bundle.getString(country + "_emoji");
             COUNTRY_TO_EMOJI.put(country, unicodeEmoji);
             EMOJI_TO_COUNTRY.put(unicodeEmoji, country);
+            EMOJIS_COUNTRY[++lastAdded] = unicodeEmoji;
+            FULL_COUNTRIES_NAME[lastAdded] = bundle.getString(country) + " " + unicodeEmoji;
         }
-
-        EMOJI_TO_COUNTRY.keySet().stream().forEach(emoji -> System.out.println(emoji));
-        EMOJI_TO_COUNTRY.values().stream().forEach(emoji -> System.out.println(emoji));
     }
 }
