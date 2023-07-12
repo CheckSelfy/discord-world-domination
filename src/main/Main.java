@@ -10,72 +10,49 @@ import java.util.concurrent.CompletableFuture;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.emoji.CustomEmoji;
+import org.javacord.api.entity.emoji.CustomEmojiBuilder;
+import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.entity.message.Message;
-import org.javacord.api.entity.message.component.ActionRow;
-import org.javacord.api.entity.message.component.Button;
+import org.javacord.api.entity.message.Reaction;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.user.User;
-import org.javacord.api.interaction.ButtonInteraction;
 import org.javacord.api.interaction.SlashCommandBuilder;
 import org.javacord.api.interaction.SlashCommandInteraction;
-import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
 
+import io.vavr.collection.List.Cons;
 import util.Pair;
 
 public class Main {
-    static Locale locale;
-    static ResourceBundle bundle;
-    static Properties properties;
-
     public static void main(String[] args) {
-        if (args.length != 1) {
-            System.out.print("Usage: java <name-of-executable> <lang>");
-            return;
-        }
-
-        try {
-            bundle = ResourceBundle.getBundle("languages/lang", new Locale.Builder().setLanguage(args[0]).build());
-        } catch (Throwable e) {
-            e.printStackTrace();
-            return;
-        }
-
-        properties = new Properties();
-        try (FileInputStream fin = new FileInputStream("settings.properties")) {
-            properties.load(fin);
-            startBot(properties.getProperty("token"));
-        } catch (Throwable e) {
-            System.err.println("Error with settings.properties");
-            e.printStackTrace();
-            return;
-        }
+        startBot(Constants.properties.getProperty("token"));
     }
 
     public static void startBot(String token) {
         // Log in the bot
         DiscordApi api = new DiscordApiBuilder().setToken(token).login().join();
 
-        new SlashCommandBuilder().setName("info").setDescription(bundle.getString("info_description"))
+        new SlashCommandBuilder().setName("info").setDescription(Constants.bundle.getString("info_description"))
                 .createGlobal(api);
-        new SlashCommandBuilder().setName("start").setDescription(bundle.getString("start_description"))
+        new SlashCommandBuilder().setName("start").setDescription(Constants.bundle.getString("start_description"))
                 .createGlobal(api);
+            
 
         api.addSlashCommandCreateListener(event -> {
             SlashCommandInteraction interaction = event.getSlashCommandInteraction();
             if (interaction.getCommandName().equals("info")) {
-                interaction.createImmediateResponder().setContent(bundle.getString("info_message")).respond();
+                interaction.createImmediateResponder().setContent(Constants.bundle.getString("info_message")).respond();
             } else if (interaction.getCommandName().equals("start")) {
                 interaction
                         .respondLater()
-                        .thenCompose(updater -> updater.setContent(bundle.getString("start_wait_message")).update())
-                        .thenCompose(message -> {
-                            List<String> emojis = new ArrayList<>(Constants.COUNTRIES.size());
-                            for (String emojiName : Constants.COUNTRIES.values())
-                                emojis.add(bundle.getString(emojiName));
-                            return message.addReactions(emojis.toArray(new String[emojis.size()]))
-                                    .thenCompose((Void v) -> message.getLatestInstance()); // TODO: bad reforwarding
-                                                                                           // message имхо
-                        })
+                        .thenCompose(updater -> updater.setContent(Constants.bundle.getString("start_wait_message")).update())
+                        .thenCompose(message -> 
+                            message
+                                .addReactions(
+                                    Constants.EMOJI_TO_COUNTRY.values()
+                                            .toArray(new String[Constants.COUNTRIES.size()]))
+                                .thenCompose((Void v) -> message.getLatestInstance())
+                        )
                         .thenCompose(message -> updatePlayersInfo(message))
                         .thenAccept(message -> {
                             message.addReactionAddListener(reactionHappeded -> updatePlayersInfo(message)); // TODO:
@@ -93,37 +70,63 @@ public class Main {
     static public CompletableFuture<Message> updatePlayersInfo(Message msg) { // too expensive
         List<Pair<String, String>> newList = Collections.synchronizedList(new ArrayList<>(Constants.COUNTRIES.size()));
 
-        List<CompletableFuture<Void>> futures = new ArrayList<>(Constants.COUNTRIES.size());
-        for (Map.Entry<String, String> entry : Constants.COUNTRIES.entrySet()) {
-            String countryName = entry.getKey();
-            String countryEmoji = entry.getValue();
+        List<Reaction> reactions = msg.getReactions();
 
-            futures.add(
-                    msg.getReactionByEmoji(bundle.getString(countryEmoji)).get().getUsers().thenAccept(
-                            usersSet -> {
-                                System.out.println(bundle.getString(countryName) + " future started");
-                                List<String> usersNames = new ArrayList<>();
-                                for (User user : usersSet)
-                                    if (!user.isYourself())
-                                        usersNames.add(user.getMentionTag());
-                                newList.add(new Pair<String, String>(
-                                        bundle.getString(countryName) + " " + bundle.getString(countryEmoji),
-                                        String.join(", ", usersNames)));
-                                System.out.println(bundle.getString(countryName) + " future ended");
-                            }));
+        List<CompletableFuture<Void>> futures = new ArrayList<>(Constants.COUNTRIES.size());
+        for (Reaction reaction: reactions) {
+            String emoji = reaction.getEmoji().asUnicodeEmoji().get(); // TODO: bad get()
+            String country = Constants.EMOJI_TO_COUNTRY.get(emoji); 
+            futures.add(reaction.getUsers().thenAcceptAsync(usersSet -> {
+                List<String> usersNames = new ArrayList<>();
+                for (User user : usersSet)
+                    if (!user.isYourself())
+                        usersNames.add(user.getMentionTag());
+                newList.add(
+                    new Pair<>(
+                        country + " " + emoji,
+                        String.join(", ", usersNames)));
+            }));
         }
 
-        EmbedBuilder builder = new EmbedBuilder().setTitle(bundle.getString("game_name"))
+        EmbedBuilder builder = new EmbedBuilder().setTitle(Constants.bundle.getString("game_name"))
                 .setAuthor("Artyom T, @CheckSelf");
 
         return CompletableFuture
-                .allOf(futures.toArray(new CompletableFuture[futures.size()]))
-                .thenCompose((Void v) -> {
-                    for (Pair<String, String> entry : newList) {
-                        builder.addField(entry.getFirst(), entry.getSecond());
-                    }
-                    return msg.createUpdater().setContent(bundle.getString("start_get_users")).setEmbed(builder)
-                            .applyChanges();
-                });
+            .allOf(futures.toArray(new CompletableFuture[futures.size()])).thenComposeAsync((Void v) -> {
+                for (Pair<String, String> entry: newList) {
+                    builder.addField(entry.getFirst(), entry.getSecond());
+                }
+                return msg.createUpdater().setContent(Constants.bundle.getString("start_get_users")).setEmbed(builder).applyChanges();
+            });
+
+        // List<CompletableFuture<Void>> futures = new ArrayList<>(Constants.COUNTRIES.size());
+        // for (Map.Entry<String, String> entry : Constants.COUNTRIES.entrySet()) {
+        //     String countryName = entry.getKey();
+        //     String countryEmoji = entry.getValue();
+
+        //     futures.add(
+        //             msg.getReactionByEmoji(Constants.bundle.getString(countryEmoji)).get().getUsers().thenAcceptAsync(
+        //                     usersSet -> {
+        //                         System.out.println(Constants.bundle.getString(countryName) + " future started");
+        //                         List<String> usersNames = new ArrayList<>();
+        //                         for (User user : usersSet)
+        //                             if (!user.isYourself())
+        //                                 usersNames.add(user.getMentionTag());
+        //                         newList.add(new Pair<String, String>(
+        //                                 Constants.bundle.getString(countryName) + " " + Constants.bundle.getString(countryEmoji),
+        //                                 String.join(", ", usersNames)));
+        //                         System.out.println(Constants.bundle.getString(countryName) + " future ended");
+        //                     }));
+        // }
+
+        // return CompletableFuture
+        //         .allOf(futures.toArray(new CompletableFuture[futures.size()]));
+        //         .thenCompose((Void v) -> {
+        //             for (Pair<String, String> entry : newList) {
+        //                 builder.addField(entry.getFirst(), entry.getSecond());
+        //             }
+        //             return msg.createUpdater().setContent(Constants.bundle.getString("start_get_users")).setEmbed(builder)
+        //                     .applyChanges();
+        //         });
     }
 }
