@@ -1,6 +1,6 @@
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
@@ -18,7 +19,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
-import util.Pair;
 
 public class ListenerStartMessage extends ListenerAdapter {
     final long messageId;
@@ -44,6 +44,8 @@ public class ListenerStartMessage extends ListenerAdapter {
         if (event.getUser().isBot() || event.getUser().isSystem())
             return false;
 
+        // TODO add support for custom emojis.
+
         return true;
     }
 
@@ -68,16 +70,16 @@ public class ListenerStartMessage extends ListenerAdapter {
 
         updateMessage(event.getChannel());
     }
-    
-    private class StateOfStartButton {
 
+    private record StateOfMessage(EmbedBuilder builder, boolean canStart) {
+        // TODO bad naming
     }
 
-    // Returns 
-    private Pair<List<String>, Boolean> getEmbedBuilderWithTeams() {
+    // Returns
+    private StateOfMessage getStateOfMessage() {
         EmbedBuilder builder = new EmbedBuilder()
-                .setAuthor("Artyom T, @CheckSelf")
-                .setTitle(Constants.bundle.getString("game_name"));
+                .setTitle(Constants.bundle.getString("game_name"))
+                .setTimestamp(Instant.now());
 
         Set<Long> uniqueUsers = new HashSet<>();
         boolean canStart = true;
@@ -90,26 +92,33 @@ public class ListenerStartMessage extends ListenerAdapter {
 
             StringJoiner value = new StringJoiner(", ");
 
-            for (Long user : usersInTeam) {
-                canStart &= !(uniqueUsers.contains(user));
-                uniqueUsers.add(user);
+            for (Long userId : usersInTeam) {
+                canStart &= !(uniqueUsers.contains(userId));
+                uniqueUsers.add(userId);
 
-                value.add("<@" + user + ">");
+                value.add("<@" + userId + ">"); // maybe <@!userId>
             }
+
             builder.addField(countryName, value.toString(), false);
         }
 
-        return new Pair<List<String>, Boolean>(builder, canStart);
+        return new StateOfMessage(builder, canStart);
     }
 
     private void updateMessage(MessageChannelUnion ch) {
+        StateOfMessage state = getStateOfMessage();
+        EmbedBuilder builder = state.builder;
+        boolean canStart = state.canStart;
+
+        builder.setDescription("Waiting for people");
+
         Button startButton = Button.of(ButtonStyle.PRIMARY, "start_button",
                 Constants.bundle.getString("start_game_button"),
                 Emoji.fromUnicode(Constants.bundle.getString("random_emoji")));
 
         ch.editMessageEmbedsById(messageId, builder.build())
                 .setComponents(ActionRow.of(
-                        canStart ? startButton.asEnabled() : startButton.asDisabled()))
+                        state.canStart ? startButton.asEnabled() : startButton.asDisabled()))
                 .queue();
     }
 
@@ -120,23 +129,45 @@ public class ListenerStartMessage extends ListenerAdapter {
 
         if (event.getUser().getIdLong() != creatorOfMessage) {
             event.reply(
-                Constants.bundle.getString("start_not_creator"))
-                .setEphemeral(true)
-                .queue();
+                    Constants.bundle.getString("start_not_creator"))
+                    .setEphemeral(true)
+                    .queue();
             return;
-        } 
+       }
 
+        startGame(event);
+    }
+
+    @Override
+    public void onMessageDelete(MessageDeleteEvent event) {
+        if (event.getMessageIdLong() == messageId && event.getChannel().getIdLong() == textChannelId) {
+            event.getJDA().removeEventListener(this);
+        }
+    }
+
+    // only changes messages and create a game
+    private void startGame(ButtonInteractionEvent event) {
         event.deferEdit().queue();
-        
+
+        EmbedBuilder builder = getStateOfMessage().builder;
+
+        builder.setDescription("Game started!");
+
         MessageEditData changesToMessage = new MessageEditBuilder()
-            .setComponents()
-            .setContent(Constants.bundle.getString("start_created_game_message"))
-            .build();
+                .setComponents()
+                .setEmbeds(builder.build())
+                .build();
 
         event.getHook()
-            .editMessageById(messageId, changesToMessage)
-            .queue();
-        
-        event.getJDA().removeEventListener(this);
+                .editMessageById(messageId, changesToMessage)
+                .queue();
+
+        event.getMessage().clearReactions().queue();
+
+        event.getJDA()
+            .removeEventListener(this);
+
+        event.getJDA()
+            .addEventListener(new GameCommunicator(event.getGuild().getIdLong(), teams, event.getJDA()));
     }
 }

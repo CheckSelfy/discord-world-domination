@@ -1,9 +1,10 @@
 import java.util.ArrayList;
 import java.util.List;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -11,6 +12,8 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class App extends ListenerAdapter {
     public static void main(String[] args) throws InterruptedException {
@@ -38,17 +41,25 @@ public class App extends ListenerAdapter {
                 break;
             case "start":
                 event.deferReply().queue();
-                Message msg = event.getHook().sendMessage(Constants.bundle.getString("start_wait_message")).complete();
+
+                Message msg = event.getHook().sendMessageEmbeds(
+                    new EmbedBuilder()
+                        .setTitle(Constants.bundle.getString("game_name"))
+                        .setDescription("Wait for emoji!").build()
+                    ).complete();
+
                 List<RestAction<Void>> emojisActions = new ArrayList<>(Constants.COUNTRIES_COUNT);
                 for (String emoji : Constants.EMOJIS_COUNTRY)
                     emojisActions.add(msg.addReaction(Emoji.fromUnicode(emoji)));
 
                 RestAction.allOf(emojisActions).complete();
 
-                msg.editMessage(Constants.bundle.getString("start_get_users")).queue();
-
                 event.getJDA()
-                        .addEventListener(new ListenerStartMessage(msg.getIdLong(), msg.getChannel().getIdLong(), event.getUser().getIdLong()));
+                        .addEventListener(
+                            new ListenerStartMessage(
+                                msg.getIdLong(), 
+                                msg.getChannel().getIdLong(), 
+                                event.getUser().getIdLong()));
                 break;
         }
     }
