@@ -1,7 +1,7 @@
 import java.time.Instant;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -25,16 +25,16 @@ public class ListenerStartMessage extends ListenerAdapter {
     final long textChannelId;
     final long creatorOfMessage;
 
-    Map<Emoji, Set<Long>> teams; // <emoji, user_set>
+    final List<Team> teams;
 
     public ListenerStartMessage(long messageId, long textChannelId, long creatorOfMessage) {
         this.messageId = messageId;
         this.textChannelId = textChannelId;
         this.creatorOfMessage = creatorOfMessage;
 
-        teams = new HashMap<>(Constants.COUNTRIES_COUNT);
-        for (Emoji teamEmoji : Constants.EMOJIS_TO_COUNTRY.keySet())
-            teams.put(teamEmoji, new HashSet<>());
+        teams = new ArrayList<>(6);
+        for (int i = 0; i < Constants.COUNTRIES_COUNT; i++)
+            teams.add(new Team(Constants.teamNames[i]));
     }
 
     public boolean needChanges(GenericMessageReactionEvent event) {
@@ -49,22 +49,22 @@ public class ListenerStartMessage extends ListenerAdapter {
         return true;
     }
 
-    @Override
-    public void onMessageReactionAdd(MessageReactionAddEvent event) {
-        if (!needChanges(event))
-            return;
-
-        teams.get(event.getEmoji()).add(event.getUserIdLong());
-
-        updateMessage(event.getChannel());
-    }
+    // TODO change needChanges to getTeamByEmoji
 
     @Override
-    public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
+    public void onGenericMessageReaction(GenericMessageReactionEvent event) {
         if (!needChanges(event))
             return;
+        
+        Team team = Team.getTeamByEmoji(teams, event.getEmoji());
 
-        teams.get(event.getEmoji()).remove(event.getUserIdLong());
+        if (team == null)
+            return;
+
+        if (event instanceof MessageReactionAddEvent)
+            team.getUsers().add(event.getUserIdLong());
+        else 
+            team.getUsers().remove(event.getUserIdLong());
 
         updateMessage(event.getChannel());
     }
@@ -82,10 +82,10 @@ public class ListenerStartMessage extends ListenerAdapter {
         Set<Long> uniqueUsers = new HashSet<>();
         boolean canStart = true;
 
-        for (Map.Entry<Emoji, Set<Long>> entry : teams.entrySet()) {
-            String countryName = Constants.getFullNameOfCountry(entry.getKey());
+        for (Team team: teams) {
+            String countryName = team.getLocalization().getFullName();
 
-            Set<Long> usersInTeam = entry.getValue();
+            Set<Long> usersInTeam = team.getUsers();
 
             StringJoiner value = new StringJoiner(", ");
 
@@ -163,6 +163,8 @@ public class ListenerStartMessage extends ListenerAdapter {
 
         event.getJDA()
                 .removeEventListener(this);
+
+        teams.removeIf(team -> team.getUsers().isEmpty());
 
         event.getJDA()
                 .addEventListener(new GameCommunicator(event.getGuild().getIdLong(), teams, event.getJDA()));

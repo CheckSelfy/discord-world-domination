@@ -1,8 +1,6 @@
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -12,8 +10,7 @@ public class Constants {
     static final ResourceBundle bundle;
     static final Properties properties;
 
-    public final static Map<Emoji, String> EMOJIS_TO_COUNTRY;
-    private final static Map<Emoji, Integer> EMOJIS_TO_COLOR;
+    public final static TeamLocalization[] teamNames;
 
     final static int COUNTRIES_COUNT = 6;
 
@@ -34,27 +31,13 @@ public class Constants {
             throw e;
         }
 
-        EMOJIS_TO_COUNTRY = new HashMap<>(COUNTRIES_COUNT);
-        EMOJIS_TO_COLOR = new HashMap<>(COUNTRIES_COUNT);
+        teamNames = new TeamLocalization[COUNTRIES_COUNT];
 
         for (int i = 0; i < COUNTRIES_COUNT; i++) {
-            EMOJIS_TO_COUNTRY.put(
+            teamNames[i] = new TeamLocalization(
                     Emoji.fromFormatted(bundle.getString("team" + i + "_emoji")),
-                    bundle.getString("team" + i));
-
-            EMOJIS_TO_COLOR.put(
-                    Emoji.fromFormatted(bundle.getString("team" + i + "_emoji")),
+                    bundle.getString("team" + i),
                     Integer.parseInt(bundle.getString("team" + i + "_color"), 16));
         }
-    }
-
-    static String getFullNameOfCountry(Emoji emoji) {
-        if (emoji.getFormatted().startsWith("<:")) // check for custom emoji
-            return EMOJIS_TO_COUNTRY.get(emoji);
-        return EMOJIS_TO_COUNTRY.get(emoji) + " " + emoji.getFormatted();
-    }
-
-    public static int getTeamColor(Emoji teamEmoji) {
-        return EMOJIS_TO_COLOR.get(teamEmoji);
     }
 }

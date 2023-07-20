@@ -1,16 +1,18 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.EnumSet;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.Channel;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
 public class App extends ListenerAdapter {
@@ -18,7 +20,7 @@ public class App extends ListenerAdapter {
         JDA jda = JDABuilder
                 .create(
                         Constants.properties.getProperty("token"),
-                        GatewayIntent.getIntents(GatewayIntent.ALL_INTENTS))
+                        EnumSet.allOf(GatewayIntent.class))
                 .addEventListeners(new App())
                 .build();
 
@@ -26,6 +28,8 @@ public class App extends ListenerAdapter {
 
         commands.addCommands(
                 Commands.slash("info", Constants.bundle.getString("info_description")),
+                Commands.slash("clear", "Clear categories (and vc'es inside) + ALL ROLES! [DEBUG]")
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL, Permission.MODERATE_MEMBERS)),
                 Commands.slash("start", Constants.bundle.getString("start_description")).setGuildOnly(true));
 
         commands.queue();
@@ -46,11 +50,7 @@ public class App extends ListenerAdapter {
                                 .setDescription("Click your emojis!").build())
                         .complete();
 
-                List<RestAction<Void>> emojisActions = new ArrayList<>(Constants.COUNTRIES_COUNT);
-                for (Emoji emoji : Constants.EMOJIS_TO_COUNTRY.keySet())
-                    emojisActions.add(msg.addReaction(emoji));
-
-                RestAction.allOf(emojisActions).complete();
+                Team.putCountriesEmoji(msg).complete();
 
                 event.getJDA()
                         .addEventListener(
@@ -58,6 +58,25 @@ public class App extends ListenerAdapter {
                                         msg.getIdLong(),
                                         msg.getChannel().getIdLong(),
                                         event.getUser().getIdLong()));
+                break;
+           case "clear":
+                event.deferReply().complete();
+                for (Category category: event.getGuild().getCategories()) {
+                        if (category.getName().equals("Global domination")) {
+                                for (Channel ch: category.getChannels())
+                                        ch.delete().queue();
+                                category.delete().queue();
+                        }
+                }
+
+                // for (Role role: event.getGuild().getRoles()) {
+                //         if (role.getName().equals("global-domination"))
+                //                 return;
+                //         System.out.println(role);
+                //         role.delete().queue();
+                // }
+
+                event.getHook().sendMessage("All cleared.").queue();
                 break;
         }
     }
