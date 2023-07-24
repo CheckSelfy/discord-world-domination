@@ -1,7 +1,8 @@
-import java.util.List;
+import java.util.Set;
 
-public class Team { 
-    String name;
-    List<Long> membersId;
-    TeamStatus state;
+public record Team(
+        Set<Long> users,
+        long roleId,
+        long guildId,
+        long voiceChannelId) {
 }

@@ -6,18 +6,16 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+
 public class Constants {
     static final ResourceBundle bundle;
     static final Properties properties;
 
-    final static String[] COUNTRIES = {"ru", "us", "de", "cn", "ir", "kp"};
-    final static String[] FULL_COUNTRIES_NAME;
-    final static String[] EMOJIS_COUNTRY;
+    public final static Map<Emoji, String> EMOJIS_TO_COUNTRY;
+    private final static Map<Emoji, Integer> EMOJIS_TO_COLOR;
 
-    final static Map<String, String> COUNTRY_TO_EMOJI;
-    final static Map<String, String> EMOJI_TO_COUNTRY;
-
-    final static int COUNTRIES_COUNT = COUNTRIES.length;
+    final static int COUNTRIES_COUNT = 6;
 
     static {
         properties = new Properties();
@@ -29,23 +27,34 @@ public class Constants {
         }
 
         try {
-            bundle = ResourceBundle.getBundle("languages/lang", new Locale.Builder().setLanguage(properties.getProperty("locale")).build());
+            bundle = ResourceBundle.getBundle("languages/lang",
+                    new Locale.Builder().setLanguage(properties.getProperty("locale")).build());
         } catch (Throwable e) {
             e.printStackTrace();
             throw e;
         }
 
-        COUNTRY_TO_EMOJI = new HashMap<>(COUNTRIES_COUNT);
-        EMOJI_TO_COUNTRY = new HashMap<>(COUNTRIES_COUNT);
-        EMOJIS_COUNTRY = new String[COUNTRIES_COUNT];
-        FULL_COUNTRIES_NAME = new String[COUNTRIES_COUNT];
-        int lastAdded = -1;
-        for (String country: COUNTRIES) {
-            String unicodeEmoji = bundle.getString(country + "_emoji");
-            COUNTRY_TO_EMOJI.put(country, unicodeEmoji);
-            EMOJI_TO_COUNTRY.put(unicodeEmoji, country);
-            EMOJIS_COUNTRY[++lastAdded] = unicodeEmoji;
-            FULL_COUNTRIES_NAME[lastAdded] = bundle.getString(country) + " " + unicodeEmoji;
+        EMOJIS_TO_COUNTRY = new HashMap<>(COUNTRIES_COUNT);
+        EMOJIS_TO_COLOR = new HashMap<>(COUNTRIES_COUNT);
+
+        for (int i = 0; i < COUNTRIES_COUNT; i++) {
+            EMOJIS_TO_COUNTRY.put(
+                    Emoji.fromFormatted(bundle.getString("team" + i + "_emoji")),
+                    bundle.getString("team" + i));
+
+            EMOJIS_TO_COLOR.put(
+                    Emoji.fromFormatted(bundle.getString("team" + i + "_emoji")),
+                    Integer.parseInt(bundle.getString("team" + i + "_color"), 16));
         }
+    }
+
+    static String getFullNameOfCountry(Emoji emoji) {
+        if (emoji.getFormatted().startsWith("<:")) // check for custom emoji
+            return EMOJIS_TO_COUNTRY.get(emoji);
+        return EMOJIS_TO_COUNTRY.get(emoji) + " " + emoji.getFormatted();
+    }
+
+    public static int getTeamColor(Emoji teamEmoji) {
+        return EMOJIS_TO_COLOR.get(teamEmoji);
     }
 }

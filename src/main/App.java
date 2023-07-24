@@ -12,8 +12,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
-import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class App extends ListenerAdapter {
     public static void main(String[] args) throws InterruptedException {
@@ -43,23 +41,23 @@ public class App extends ListenerAdapter {
                 event.deferReply().queue();
 
                 Message msg = event.getHook().sendMessageEmbeds(
-                    new EmbedBuilder()
-                        .setTitle(Constants.bundle.getString("game_name"))
-                        .setDescription("Wait for emoji!").build()
-                    ).complete();
+                        new EmbedBuilder()
+                                .setTitle(Constants.bundle.getString("game_name"))
+                                .setDescription("Click your emojis!").build())
+                        .complete();
 
                 List<RestAction<Void>> emojisActions = new ArrayList<>(Constants.COUNTRIES_COUNT);
-                for (String emoji : Constants.EMOJIS_COUNTRY)
-                    emojisActions.add(msg.addReaction(Emoji.fromUnicode(emoji)));
+                for (Emoji emoji : Constants.EMOJIS_TO_COUNTRY.keySet())
+                    emojisActions.add(msg.addReaction(emoji));
 
                 RestAction.allOf(emojisActions).complete();
 
                 event.getJDA()
                         .addEventListener(
-                            new ListenerStartMessage(
-                                msg.getIdLong(), 
-                                msg.getChannel().getIdLong(), 
-                                event.getUser().getIdLong()));
+                                new ListenerStartMessage(
+                                        msg.getIdLong(),
+                                        msg.getChannel().getIdLong(),
+                                        event.getUser().getIdLong()));
                 break;
         }
     }

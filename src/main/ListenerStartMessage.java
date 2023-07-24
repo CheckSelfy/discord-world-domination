@@ -25,7 +25,7 @@ public class ListenerStartMessage extends ListenerAdapter {
     final long textChannelId;
     final long creatorOfMessage;
 
-    Map<String, Set<Long>> teams;
+    Map<Emoji, Set<Long>> teams; // <emoji, user_set>
 
     public ListenerStartMessage(long messageId, long textChannelId, long creatorOfMessage) {
         this.messageId = messageId;
@@ -33,8 +33,8 @@ public class ListenerStartMessage extends ListenerAdapter {
         this.creatorOfMessage = creatorOfMessage;
 
         teams = new HashMap<>(Constants.COUNTRIES_COUNT);
-        for (String teamName : Constants.COUNTRIES)
-            teams.put(teamName, new HashSet<>());
+        for (Emoji teamEmoji : Constants.EMOJIS_TO_COUNTRY.keySet())
+            teams.put(teamEmoji, new HashSet<>());
     }
 
     public boolean needChanges(GenericMessageReactionEvent event) {
@@ -54,8 +54,7 @@ public class ListenerStartMessage extends ListenerAdapter {
         if (!needChanges(event))
             return;
 
-        String nameOfCountry = Constants.EMOJI_TO_COUNTRY.get(event.getEmoji().getAsReactionCode());
-        teams.get(nameOfCountry).add(event.getUserIdLong());
+        teams.get(event.getEmoji()).add(event.getUserIdLong());
 
         updateMessage(event.getChannel());
     }
@@ -65,8 +64,7 @@ public class ListenerStartMessage extends ListenerAdapter {
         if (!needChanges(event))
             return;
 
-        String nameOfCountry = Constants.EMOJI_TO_COUNTRY.get(event.getEmoji().getAsReactionCode());
-        teams.get(nameOfCountry).remove(event.getUserIdLong());
+        teams.get(event.getEmoji()).remove(event.getUserIdLong());
 
         updateMessage(event.getChannel());
     }
@@ -84,10 +82,9 @@ public class ListenerStartMessage extends ListenerAdapter {
         Set<Long> uniqueUsers = new HashSet<>();
         boolean canStart = true;
 
-        for (Map.Entry<String, Set<Long>> entry : teams.entrySet()) {
-            String countryName = entry.getKey();
-            countryName = Constants.bundle.getString(countryName) + " "
-                    + Constants.COUNTRY_TO_EMOJI.get(countryName);
+        for (Map.Entry<Emoji, Set<Long>> entry : teams.entrySet()) {
+            String countryName = Constants.getFullNameOfCountry(entry.getKey());
+
             Set<Long> usersInTeam = entry.getValue();
 
             StringJoiner value = new StringJoiner(", ");
@@ -108,16 +105,16 @@ public class ListenerStartMessage extends ListenerAdapter {
     private void updateMessage(MessageChannelUnion ch) {
         StateOfMessage state = getStateOfMessage();
         EmbedBuilder builder = state.builder;
-        boolean canStart = state.canStart;
 
         builder.setDescription("Waiting for people");
 
         Button startButton = Button.of(ButtonStyle.PRIMARY, "start_button",
                 Constants.bundle.getString("start_game_button"),
-                Emoji.fromUnicode(Constants.bundle.getString("random_emoji")));
+                Emoji.fromFormatted(Constants.bundle.getString("random_emoji")));
 
         ch.editMessageEmbedsById(messageId, builder.build())
                 .setComponents(ActionRow.of(
+                        // startButton.asEnabled()))
                         state.canStart ? startButton.asEnabled() : startButton.asDisabled()))
                 .queue();
     }
@@ -133,7 +130,7 @@ public class ListenerStartMessage extends ListenerAdapter {
                     .setEphemeral(true)
                     .queue();
             return;
-       }
+        }
 
         startGame(event);
     }
@@ -165,9 +162,9 @@ public class ListenerStartMessage extends ListenerAdapter {
         event.getMessage().clearReactions().queue();
 
         event.getJDA()
-            .removeEventListener(this);
+                .removeEventListener(this);
 
         event.getJDA()
-            .addEventListener(new GameCommunicator(event.getGuild().getIdLong(), teams, event.getJDA()));
+                .addEventListener(new GameCommunicator(event.getGuild().getIdLong(), teams, event.getJDA()));
     }
 }
