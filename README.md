@@ -1,1 +1,1 @@
-# discord-global-domination
+# discord-world-domination
