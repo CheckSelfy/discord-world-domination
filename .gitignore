@@ -31,3 +31,5 @@ build
 bin/main/languages/lang.properties
 .vscode/launch.json
 .vscode/settings.json
+
+token.txt

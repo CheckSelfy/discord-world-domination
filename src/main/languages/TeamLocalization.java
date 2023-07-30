@@ -1,3 +1,4 @@
+package languages;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 
 public class TeamLocalization {
@@ -9,6 +10,12 @@ public class TeamLocalization {
         this.emoji = emoji;
         this.name = name;
         this.color = color;
+    }
+
+    public TeamLocalization(TeamLocalization other) {
+        emoji = other.getEmoji();
+        name = other.getName();
+        color = other.getColor();
     }
 
     public Emoji getEmoji() {
@@ -23,11 +30,11 @@ public class TeamLocalization {
         return color;
     }
 
+    public boolean isFormatted() {
+        return emoji.getFormatted().startsWith("<:");
+    }
+
     public String getFullName() {
-        if (emoji.getFormatted().startsWith("<:"))  { // check for custom emoji (discord can't show them in most of places)
-            return name;
-        } else {
-            return name + ' ' + emoji.getName(); // otherwise, add emoji
-        }
+        return name + ' ' + emoji.getName(); 
     }
 }

@@ -1,18 +1,23 @@
+package util;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
+import languages.TeamLocalization;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 
 public class Constants {
-    static final ResourceBundle bundle;
-    static final Properties properties;
+    public static final ResourceBundle bundle;
+    public static final Properties properties;
 
-    public final static TeamLocalization[] teamNames;
+    public final static ArrayList<TeamLocalization> teamNames;
 
-    final static int COUNTRIES_COUNT = 6;
+    public final static int COUNTRIES_COUNT = 6;
 
     static {
         properties = new Properties();
@@ -31,13 +36,17 @@ public class Constants {
             throw e;
         }
 
-        teamNames = new TeamLocalization[COUNTRIES_COUNT];
+        teamNames = new ArrayList<>(COUNTRIES_COUNT);
 
         for (int i = 0; i < COUNTRIES_COUNT; i++) {
-            teamNames[i] = new TeamLocalization(
+            teamNames.add(new TeamLocalization(
                     Emoji.fromFormatted(bundle.getString("team" + i + "_emoji")),
                     bundle.getString("team" + i),
-                    Integer.parseInt(bundle.getString("team" + i + "_color"), 16));
+                    Integer.parseInt(bundle.getString("team" + i + "_color"), 16)));
         }
+    }
+
+    public static EmbedBuilder getEmptyEmbedBuilder() {
+        return new EmbedBuilder().setTitle(bundle.getString("game_name"));
     }
 }
