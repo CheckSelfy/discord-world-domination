@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import discordentities.checkers.MessageWithCreatorChecker;
+import discordentities.checkers.MessageWithPrivilegeUserChecker;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -25,7 +25,7 @@ import util.GameUtil;
 
 // Phase 1. This object collects people for upcoming game
 public class CollectorPhase extends APhase {
-    MessageWithCreatorChecker message;
+    MessageWithPrivilegeUserChecker message;
     ArrayList<Set<Long>> teams;
 
     public CollectorPhase(SlashCommandInteractionEvent event) {
@@ -39,7 +39,7 @@ public class CollectorPhase extends APhase {
         event.getHook()
             .sendMessageEmbeds(Constants.getEmptyEmbedBuilder().setDescription("Pick your countries [DEBUG]!").build())
             .flatMap(msg -> {
-                message = new MessageWithCreatorChecker(msg, event.getUser().getIdLong());
+                message = new MessageWithPrivilegeUserChecker(msg, event.getUser().getIdLong());
                 return GameUtil.putCountriesEmoji(msg);
             }).complete();
     }

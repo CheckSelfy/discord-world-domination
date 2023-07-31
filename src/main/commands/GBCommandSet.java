@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import phases.CollectorPhase;
+import phases.abstracts.IPhase;
 import util.Constants;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Role;
@@ -15,11 +16,13 @@ public class GBCommandSet extends CommandSet {
         addCommand("info", Constants.bundle.getString("info_description"), GBCommandSet::infoCommand);
 
         addCommand(Commands.slash("clear", "Clear categories (and vc'es inside) + ALL ROLES! [DEBUG]")
-                    .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL, Permission.MODERATE_MEMBERS))
-                    .setGuildOnly(true), 
-                    GBCommandSet::clearCommand);
+                .setDefaultPermissions(
+                        DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL, Permission.MODERATE_MEMBERS))
+                .setGuildOnly(true),
+                GBCommandSet::clearCommand);
 
-        addCommand(Commands.slash("start", Constants.bundle.getString("start_description")).setGuildOnly(true), GBCommandSet::startCommand);
+        addCommand(Commands.slash("start", Constants.bundle.getString("start_description")).setGuildOnly(true),
+                GBCommandSet::startCommand);
     }
 
     private static void infoCommand(SlashCommandInteractionEvent event) {
@@ -28,21 +31,35 @@ public class GBCommandSet extends CommandSet {
 
     private static void clearCommand(SlashCommandInteractionEvent event) {
         event.deferReply().complete();
-        for (Category category: event.getGuild().getCategories()) {
-                if (category.getName().equals(Constants.bundle.getString("game_name"))) {
-                        for (Channel ch: category.getChannels()) {
-                                ch.delete().queue();
-                        }
-                        category.delete().queue();
+        for (Category category : event.getGuild().getCategories()) {
+            System.out.print(category.getName() + " ?= " + Constants.bundle.getString("game_name"));
+            if (category.getName().equals(Constants.bundle.getString("game_name"))) {
+                System.out.println(" yes");
+                for (Channel ch : category.getChannels()) {
+                    ch.delete().complete();
                 }
-            }
-        for (Role role: event.getGuild().getRoles()) {
-            if (role.compareTo(role.getGuild().getSelfMember().getRoles().get(0)) < 0) {
-                System.out.println("role deleted");
-                role.delete().complete();
+                category.delete().complete();
+            } else {
+                System.out.println(" no");
             }
         }
-        
+
+        try {
+            for (Role role : event.getGuild().getRoles()) {
+                if (role.compareTo(role.getGuild().getSelfMember().getRoles().get(0)) < 0) {
+                    System.out.println("role deleted");
+                    role.delete().complete();
+                }
+            }
+        } catch (Exception e) {
+            ;
+        }
+
+        for (Object obj: event.getJDA().getRegisteredListeners()) {
+            if (obj instanceof IPhase)
+                event.getJDA().removeEventListener(obj);
+        }
+
         event.getHook().sendMessage("Done :)").queue();
     }
 
