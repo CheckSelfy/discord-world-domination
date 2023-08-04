@@ -10,19 +10,11 @@ public class ChannelChecker extends GuildChecker {
         this.channelId = channelId;
     }
 
-    public boolean check(long guildId, long channelId) {
-        return check(guildId) && channelId == this.channelId;
-    }
+    public boolean check(long guildId, long channelId) { return check(guildId) && channelId == this.channelId; }
 
-    public boolean check(GuildMessageChannel ch) {
-        return check(ch.getGuild().getIdLong(), ch.getIdLong());
-    }
+    public boolean check(GuildMessageChannel ch) { return check(ch.getGuild().getIdLong(), ch.getIdLong()); }
 
-    public long getChannelId() {
-        return channelId;
-    }
+    public long getChannelId() { return channelId; }
 
-    public void setChannelId(long channelId) {
-        this.channelId = channelId;
-    }
+    public void setChannelId(long channelId) { this.channelId = channelId; }
 }

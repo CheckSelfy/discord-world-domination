@@ -24,15 +24,11 @@ public class MessageChecker extends ChannelChecker {
     }
 
     public boolean check(GenericMessageReactionEvent event) {
-        return check(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong()) && 
-              !event.getUser().isBot();
+        return check(event.getGuild().getIdLong(), event.getChannel().getIdLong(), event.getMessageIdLong())
+                && !event.getUser().isBot();
     }
 
-    public long getMessageId() {
-        return messageId;
-    }
+    public long getMessageId() { return messageId; }
 
-    public void setMessageId(long messageId) {
-        this.messageId = messageId;
-    }
+    public void setMessageId(long messageId) { this.messageId = messageId; }
 }

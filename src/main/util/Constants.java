@@ -1,8 +1,8 @@
 package util;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -39,10 +39,8 @@ public class Constants {
         teamNames = new ArrayList<>(COUNTRIES_COUNT);
 
         for (int i = 0; i < COUNTRIES_COUNT; i++) {
-            teamNames.add(new TeamLocalization(
-                    Emoji.fromFormatted(bundle.getString("team" + i + "_emoji")),
-                    bundle.getString("team" + i),
-                    Integer.parseInt(bundle.getString("team" + i + "_color"), 16)));
+            teamNames.add(new TeamLocalization(Emoji.fromFormatted(bundle.getString("team" + i + "_emoji")),
+                    bundle.getString("team" + i), Integer.parseInt(bundle.getString("team" + i + "_color"), 16)));
         }
     }
 

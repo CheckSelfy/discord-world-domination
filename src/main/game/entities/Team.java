@@ -24,15 +24,13 @@ public class Team extends TeamLocalization {
         this.members = newMembers;
     }
 
-    public Set<Member> getMembers() {
-        return members;
-    }
+    public Set<Member> getMembers() { return members; }
 
     public void setPresident(long userId) {
         members.iterator().forEachRemaining(member -> {
             if (member.getUserId() == userId)
                 member.setPresident(true);
-            else 
+            else
                 member.setPresident(false);
         });
     }

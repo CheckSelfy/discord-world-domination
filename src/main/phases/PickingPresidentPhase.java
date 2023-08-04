@@ -1,6 +1,7 @@
 package phases;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -14,6 +15,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -26,14 +28,18 @@ import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import phases.abstracts.APhase;
 import phases.abstracts.IPhase;
 import util.Constants;
+import util.DiscordUtil;
 
 // Phase 2. This object creates category (voice chats (one per team + general), text chat (general)),
 //                  and send poll-pick-president
+
+// TODO. It's bad idea to use atomicinteger counter. Suppose that two players of same team click the button -> game is broken.
+//                                                   Maybe it would be better to create array of booleans.
 public class PickingPresidentPhase extends APhase {
     private ArrayList<DiscordTeam> teams;
-    private AtomicInteger remainingPolls;
 
     public PickingPresidentPhase(JDA jda, List<Set<Long>> uncreatedTeams, MessageWithPrivilegeUserChecker msg) {
+        super(jda);
         teams = new ArrayList<>();
         for (int i = 0; i < uncreatedTeams.size(); i++) {
             if (!uncreatedTeams.get(i).isEmpty()) {
@@ -43,11 +49,11 @@ public class PickingPresidentPhase extends APhase {
 
         remainingPolls = new AtomicInteger(teams.size());
 
-        createCategoryWithDependantds(jda, msg.getGuildId()).flatMap(o -> createPolls(jda)).queue();
+        createCategoryWithDependantds(msg.getGuildId()).flatMap(o -> createPolls()).queue();
     }
 
-    private RestAction<Object> createCategoryWithDependantds(JDA jda, long guildId) {
-        Guild guild = jda.getGuildById(guildId);
+    private RestAction<Object> createCategoryWithDependantds(long guildId) {
+        Guild guild = getJDA().getGuildById(guildId);
 
         return guild
                 .createCategory(Constants.bundle.getString("game_name"))
@@ -71,17 +77,17 @@ public class PickingPresidentPhase extends APhase {
 
     }
 
-    private static RestAction<Role> addRoles(Role role, Team team) {
+    private RestAction<Role> addRoles(Role role, Team team) {
         Guild guild = role.getGuild();
         List<RestAction<Void>> actions = new ArrayList<>();
         for (Member member : team.getMembers()) {
             actions.add(
-                    guild.addRoleToMember(role.getJDA().getUserById(member.getUserId()), role));
+                    guild.addRoleToMember(getJDA().getUserById(member.getUserId()), role));
         }
         return RestAction.allOf(actions).map(listOfVoids -> role);
     }
 
-    private static RestAction<Void> createTeamVoiceChannel(Role role, Category category, DiscordTeam team) {
+    private RestAction<Void> createTeamVoiceChannel(Role role, Category category, DiscordTeam team) {
         Guild guild = role.getGuild();
         return category
                 .createVoiceChannel(team.getName())
@@ -100,17 +106,18 @@ public class PickingPresidentPhase extends APhase {
                 });
     }
 
+    private AtomicInteger remainingPolls;
     static String pollButtonId = "pickPresident";
 
-    private RestAction<Void> createPolls(JDA jda) {
+    private RestAction<Void> createPolls() {
         MessageCreateBuilder builder = new MessageCreateBuilder()
                 .setContent("Pick your presidents! [DEBUG]");
         List<RestAction<Void>> actions = new ArrayList<>(teams.size());
         for (int i = 0; i < teams.size(); i++) {
             DiscordTeam team = teams.get(i);
-            builder.setActionRow(Button.of(ButtonStyle.PRIMARY, "pickPresident" + i, "Random!"));
+            builder.setActionRow(Button.of(ButtonStyle.PRIMARY, pollButtonId + i, "Pick! [DEBUG]"));
             actions.add(
-                    jda.getVoiceChannelById(team.getVoiceChannel().getChannelId())
+                    getJDA().getVoiceChannelById(team.getVoiceChannel().getChannelId())
                             .sendMessage(builder.build())
                             .flatMap(msg -> {
                                 team.getColor();
@@ -125,39 +132,51 @@ public class PickingPresidentPhase extends APhase {
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
+        System.out.println("Button '" + event.getButton().getId() + "' clicked");
+
         if (!event.getButton().getId().startsWith("pickPresident"))
             return;
+
+
         int indexOfTeam = Integer.parseInt(event.getButton().getId().substring(pollButtonId.length()));
         DiscordTeam team = teams.get(indexOfTeam);
+        System.out.println("team = " + team.getName());
         event.deferEdit().queue();
         event.getChannel().asVoiceChannel().retrieveMessageById(event.getMessageId())
-                .flatMap(msg -> msg.getReaction(Emoji.fromFormatted(Constants.bundle.getString("pick_president_emoji"))).retrieveUsers())
-                .map(listUsers -> {
+                .flatMap(msg -> msg.getReaction(Emoji.fromFormatted(Constants.bundle.getString("pick_president_emoji")))
+                        .retrieveUsers())
+                .flatMap(listUsers -> {
                     int size = listUsers.size() - 1; // remove selfuser
+                    long userId;
                     if (size == 0) {
-                        size += team.getMembers().size();
+                        size = team.getMembers().size();
+                        Iterator<Member> iter = team.getMembers().iterator();
+                        for (int i = 0; i < size - 1; i++)
+                            iter.next();
+                        userId = iter.next().getUserId();
+                    } else {
+                        listUsers.removeIf(u -> u.isBot());
+                        int pickedUserNumber = new Random(event.getIdLong()).nextInt(size);
+                        User user = listUsers.get(pickedUserNumber);
+                        userId = user.getIdLong();
                     }
-                    int pickedUserNumber = new Random(event.getIdLong()).nextInt(size);
-                    return listUsers.get(pickedUserNumber);
-                }).flatMap(user -> {
-                    team.setPresident(user.getIdLong());
+                    team.setPresident(userId);
                     remainingPolls.decrementAndGet();
                     MessageEditData edit = new MessageEditBuilder()
-                            .setContent("Your president: <@" + user.getIdLong() + ">")
+                            .setContent("Your president [DEBUG]: " + DiscordUtil.getDiscordMentionTag(userId))
                             .setComponents()
                             .build();
                     return event.getHook().editMessageById(event.getMessageId(), edit);
-                }).flatMap(message -> message.clearReactions())
-                .map(v -> {
+                }).flatMap(msg -> msg.clearReactions()).map(v -> {
                     if (remainingPolls.get() == 0) {
-                        changeToNextPhase(event.getJDA());
+                        changeToNextPhase();
                     }
                     return null;
                 }).queue();
     }
 
     @Override
-    public IPhase nextPhase(JDA jda) {
-        return new MainPhase();
+    public IPhase nextPhase() {
+        return new TalkingPhase(getJDA(), teams);
     }
 }

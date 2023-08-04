@@ -16,23 +16,13 @@ public class MessageWithPrivilegeUserChecker extends MessageChecker {
         this.userId = userId;
     }
 
-    public boolean checkUser(long userId) {
-        return this.userId == userId;
-    }
+    public boolean checkUser(long userId) { return this.userId == userId; }
 
-    public boolean checkUser(User user) {
-        return checkUser(user.getIdLong());
-    }
+    public boolean checkUser(User user) { return checkUser(user.getIdLong()); }
 
-    public long getUserId() {
-        return userId;
-    }
+    public long getUserId() { return userId; }
 
-    public void setUserId(long userId) {
-        this.userId = userId;
-    }
+    public void setUserId(long userId) { this.userId = userId; }
 
-    public void setUserId(User user) {
-        setUserId(user.getIdLong());
-    }
+    public void setUserId(User user) { setUserId(user.getIdLong()); }
 }

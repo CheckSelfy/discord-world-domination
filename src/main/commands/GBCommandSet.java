@@ -18,8 +18,7 @@ public class GBCommandSet extends CommandSet {
         addCommand(Commands.slash("clear", "Clear categories (and vc'es inside) + ALL ROLES! [DEBUG]")
                 .setDefaultPermissions(
                         DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL, Permission.MODERATE_MEMBERS))
-                .setGuildOnly(true),
-                GBCommandSet::clearCommand);
+                .setGuildOnly(true), GBCommandSet::clearCommand);
 
         addCommand(Commands.slash("start", Constants.bundle.getString("start_description")).setGuildOnly(true),
                 GBCommandSet::startCommand);
@@ -52,10 +51,10 @@ public class GBCommandSet extends CommandSet {
                 }
             }
         } catch (Exception e) {
-            ;
+            ; // TODO ??!?!?!?!?
         }
 
-        for (Object obj: event.getJDA().getRegisteredListeners()) {
+        for (Object obj : event.getJDA().getRegisteredListeners()) {
             if (obj instanceof IPhase)
                 event.getJDA().removeEventListener(obj);
         }
