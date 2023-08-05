@@ -2,22 +2,22 @@ package game.entities;
 
 public class Member {
     private final long userId;
-    private boolean isPresident;
+    // private boolean isPresident;
     private Team team;
 
     public Member(long userId) { this(userId, null); }
 
     public Member(long userId, Team team) {
         this.userId = userId;
-        isPresident = false;
+        // isPresident = false;
         this.team = team;
     }
 
     public long getUserId() { return userId; }
 
-    public boolean isPresident() { return isPresident; }
+    // public boolean isPresident() { return isPresident; }
 
-    public void setPresident(boolean isPresident) { this.isPresident = isPresident; }
+    // public void setPresident(boolean isPresident) { this.isPresident = isPresident; }
 
     public Team getTeam() { return team; }
 

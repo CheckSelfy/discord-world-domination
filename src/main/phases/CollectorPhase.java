@@ -103,12 +103,12 @@ public class CollectorPhase extends APhase {
     }
 
     private void updateMessage() {
-        Button button = Button.of(ButtonStyle.SUCCESS, "start_game",
+        Button button = Button.of(ButtonStyle.SUCCESS, "start_game", Constants.bundle.getString("start_game_button"),
                 Emoji.fromFormatted(Constants.bundle.getString("start_emoji_button")));
 
         getJDA().getTextChannelById(message.getChannelId())
                 .editMessageEmbedsById(message.getMessageId(), buildEmbedWithUsers(true))
-                .setActionRow(usersRepeat() ? button.asDisabled() : button.asEnabled()).queue();
+                .setActionRow(button.asEnabled()).queue();
     }
 
     @Override

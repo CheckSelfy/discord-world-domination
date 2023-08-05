@@ -7,6 +7,7 @@ import languages.TeamLocalization;
 
 public class Team extends TeamLocalization {
     Set<Member> members;
+    Member president;
 
     public Team(Team team) {
         super((TeamLocalization) team);
@@ -22,16 +23,23 @@ public class Team extends TeamLocalization {
             newMembers.add(new Member(user, this));
 
         this.members = newMembers;
+        this.president = null;
     }
 
     public Set<Member> getMembers() { return members; }
 
+    public Member getPresident() {
+        return president;
+    }
+
+    public boolean isPresident(long userId) {
+        return getPresident().getUserId() == userId;
+    }
+
     public void setPresident(long userId) {
         members.iterator().forEachRemaining(member -> {
             if (member.getUserId() == userId)
-                member.setPresident(true);
-            else
-                member.setPresident(false);
+                president = member;
         });
     }
 }

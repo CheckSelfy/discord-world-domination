@@ -29,8 +29,4 @@ public class DiscordTeam extends Team {
     public void setRoleId(long roleId) { role.setRoleId(roleId); }
 
     public void setVoiceChannel(long channelId) { voiceChannel.setChannelId(channelId); }
-
-    public void setPresident(long userId) {
-
-    }
 }
