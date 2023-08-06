@@ -40,7 +40,7 @@ public class CollectorPhase extends APhase {
 
         event.getHook()
                 .sendMessageEmbeds(
-                        Constants.getEmptyEmbedBuilder().setDescription("Pick your countries [DEBUG]!").build())
+                        Constants.getEmptyEmbedBuilder().setDescription(Constants.bundle.getString("start_embedDescription")).build())
                 .flatMap(msg -> {
                     message = new MessageWithPrivilegeUserChecker(msg, event.getUser().getIdLong());
                     return GameUtil.putCountriesEmoji(msg);
@@ -119,7 +119,7 @@ public class CollectorPhase extends APhase {
         }
 
         if (!message.checkUser(event.getUser())) {
-            event.reply("Sorry, u'r not creator [DEBUG]").setEphemeral(true).queue();
+            event.reply(Constants.bundle.getString("start_not_creator")).setEphemeral(true).queue();
             return;
         }
 

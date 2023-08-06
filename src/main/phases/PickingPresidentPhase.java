@@ -116,11 +116,11 @@ public class PickingPresidentPhase extends APhase {
 
     private RestAction<Void> createPolls() {
         MessageCreateBuilder builder = new MessageCreateBuilder()
-                .setContent("Pick your presidents! [DEBUG]");
+                .setContent(Constants.bundle.getString("pick_president_message"));
         List<RestAction<Void>> actions = new ArrayList<>(teams.size());
         for (int i = 0; i < teams.size(); i++) {
             DiscordTeam team = teams.get(i);
-            builder.setActionRow(Button.of(ButtonStyle.PRIMARY, pollButtonId + i, "Pick! [DEBUG]"));
+            builder.setActionRow(Button.of(ButtonStyle.PRIMARY, pollButtonId + i, Constants.bundle.getString("pick_president_button")));
             actions.add(
                     getJDA().getVoiceChannelById(team.getVoiceChannel().getChannelId())
                             .sendMessage(builder.build())
@@ -167,7 +167,7 @@ public class PickingPresidentPhase extends APhase {
                     team.setPresident(userId);
                     remainingPolls.decrementAndGet();
                     MessageEditData edit = new MessageEditBuilder()
-                            .setContent("Your president [DEBUG]: " + DiscordUtil.getDiscordMentionTag(userId))
+                            .setContent(Constants.bundle.getString("pick_president_final_message") + DiscordUtil.getDiscordMentionTag(userId))
                             .setComponents()
                             .build();
                     return event.getHook().editMessageById(event.getMessageId(), edit);

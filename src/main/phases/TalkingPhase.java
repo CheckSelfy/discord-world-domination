@@ -81,7 +81,7 @@ public class TalkingPhase extends APhase {
 
     private MessageEmbed buildEmbed(int teamIndex) {
         StringJoiner send = new StringJoiner("\n");
-        StringJoiner received = new StringJoiner("\n");
+        StringJoiner approved = new StringJoiner("\n");
         StringJoiner youCanJoin = new StringJoiner("\n");
         StringJoiner canJoinToYou = new StringJoiner("\n");
         for (int i = 0; i < this.teams.size(); i++) {
@@ -91,7 +91,7 @@ public class TalkingPhase extends APhase {
                 send.add(teams.get(i).getFullName());
             }
             if (requests.get(i).get(teamIndex).equals(RequestStatus.SENT)) {
-                received.add(teams.get(i).getFullName());
+                approved.add(teams.get(i).getFullName());
             }
             if (requests.get(teamIndex).get(i).equals(RequestStatus.APPROVED)) {
                 youCanJoin.add(teams.get(i).getFullName());
@@ -100,13 +100,14 @@ public class TalkingPhase extends APhase {
                 canJoinToYou.add(teams.get(i).getFullName());
             }
         }
-        return new EmbedBuilder().setTitle("game_name [debug]").addField("Send requests to:", send.toString(), false)
-                .addField("Received requests from:", received.toString(), false)
-                .addField("These teams can join to you:", canJoinToYou.toString(), false)
-                .addField("You can join to these teams:", youCanJoin.toString(), false).build();
+        return new EmbedBuilder().setTitle("game_name [debug]")
+                .addField(Constants.bundle.getString("talking_sent_requests"), send.toString(), false)
+                .addField(Constants.bundle.getString("talking_recieved_requests"), approved.toString(), false)
+                .addField(Constants.bundle.getString("talking_teams_can_join_to_you"), canJoinToYou.toString(), false)
+                .addField(Constants.bundle.getString("talking_you_can_join_to_teams"), youCanJoin.toString(), false).build();
     }
 
-    // button = [send\receive] + <object> + "_" + <subject>
+    // button = [send\approve] + <object> + "_" + <subject>
     private List<ActionRow> buildButtons(int teamIndex) {
         List<Button> buttons = new ArrayList<>(this.teams.size() - 1);
         for (int i = 0; i < this.teams.size(); i++) {
@@ -115,29 +116,29 @@ public class TalkingPhase extends APhase {
             }
 
             if (requests.get(i).get(teamIndex).equals(RequestStatus.APPROVED)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, "Send",
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, Constants.bundle.getString("talking_send_button"),
                         teams.get(i).getEmoji()).asDisabled());
                 continue;
             }
 
             if (requests.get(teamIndex).get(i).equals(RequestStatus.APPROVED)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "join" + teamIndex + "_" + i, "Join",
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "join" + teamIndex + "_" + i, Constants.bundle.getString("talking_join_button"),
                         teams.get(i).getEmoji()));
                 continue;
             }
 
             if (requests.get(i).get(teamIndex).equals(RequestStatus.SENT)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "receive" + teamIndex + "_" + i, "Approve",
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "approve" + teamIndex + "_" + i, Constants.bundle.getString("talking_approve_button"),
                         teams.get(i).getEmoji()));
                 continue;
             }
 
             if (requests.get(teamIndex).get(i).equals(RequestStatus.NO)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, "Send",
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, Constants.bundle.getString("talking_send_button"),
                         teams.get(i).getEmoji()));
                 continue;
             } else if (requests.get(teamIndex).get(i).equals(RequestStatus.SENT)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, "Send",
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, Constants.bundle.getString("talking_send_button"),
                         teams.get(i).getEmoji()).asDisabled());
                 continue;
             }
@@ -209,13 +210,13 @@ public class TalkingPhase extends APhase {
                     + teams.get(guestTeam).getName() + "'");
             event.deferEdit().flatMap(v -> updateMessage(homeTeam))
                     .flatMap(m -> updateMessage(guestTeam)).queue();
-        } else if (str.startsWith("receive")) {
-            str = str.substring("receive".length());
+        } else if (str.startsWith("approve")) {
+            str = str.substring("approve".length());
             Pair<Integer, Integer> parsedIndexes = parseButtonTeams(str);
             int guestTeam = parsedIndexes.getFirst();
             int homeTeam = parsedIndexes.getSecond(); // it's us
             if (!teams.get(guestTeam).isPresident(event.getUser().getIdLong())) {
-                event.reply("You are not the president.").setEphemeral(true).queue();
+                event.reply(Constants.bundle.getString("talking_you_are_not_president")).setEphemeral(true).queue();
                 return;
             }
             requests.get(homeTeam).set(guestTeam, RequestStatus.APPROVED);
@@ -229,7 +230,7 @@ public class TalkingPhase extends APhase {
             int guestTeam = parsedIndexes.getFirst(); // it's us
             int homeTeam = parsedIndexes.getSecond();
             if (!teams.get(guestTeam).isPresident(event.getUser().getIdLong())) {
-                event.reply("You are not the president.").setEphemeral(true).queue();
+                event.reply(Constants.bundle.getString("talking_you_are_not_president")).setEphemeral(true).queue();
                 return;
             }
 
@@ -246,7 +247,7 @@ public class TalkingPhase extends APhase {
                 .getVoiceChannelById(teams.get(homeTeam).getVoiceChannel().getChannelId());
         listOfUsers.removeIf(user -> user.isBot());
         if (listOfUsers.isEmpty()) {
-            return event.reply("Click running man emoji [debug]").setEphemeral(true);
+            return event.reply(Constants.bundle.getString("talking_attempt_send_empty_delegation")).setEphemeral(true);
         }
 
         requests.get(guestTeam).set(homeTeam, RequestStatus.NO);
@@ -277,7 +278,7 @@ public class TalkingPhase extends APhase {
         }
         return RestAction.allOf(actions);
     }
-    
+
     private class Ender extends TimerTask {
         @Override
         public void run() {
@@ -286,7 +287,6 @@ public class TalkingPhase extends APhase {
             changeToNextPhase();
         }
     }
-        
 
     @Override
     public IPhase nextPhase() {
