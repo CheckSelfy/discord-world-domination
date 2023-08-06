@@ -52,11 +52,16 @@ public class PickingPresidentPhase extends APhase {
         createCategoryWithDependantds(msg.getGuildId()).flatMap(o -> createPolls()).queue();
     }
 
-    private RestAction<Object> createCategoryWithDependantds(long guildId) {
+    private RestAction<? extends Object> createCategoryWithDependantds(long guildId) {
         Guild guild = getJDA().getGuildById(guildId);
 
         return guild
                 .createCategory(Constants.bundle.getString("game_name"))
+                .flatMap(category -> guild
+                        .modifyCategoryPositions()
+                        .selectPosition(category)
+                        .moveTo(1)
+                        .map(v -> category))
                 .flatMap(category -> {
                     List<RestAction<Void>> actions = new ArrayList<>(teams.size());
                     for (DiscordTeam team : teams) {
@@ -72,7 +77,7 @@ public class PickingPresidentPhase extends APhase {
                                                     .and(createTeamVoiceChannel(role, category, team)); // created voice
                                         }));
                     }
-                    return RestAction.allOf(actions).map(listOfVoids -> null);
+                    return RestAction.allOf(actions);
                 });
 
     }
@@ -87,7 +92,7 @@ public class PickingPresidentPhase extends APhase {
         return RestAction.allOf(actions).map(listOfVoids -> role);
     }
 
-    private RestAction<Void> createTeamVoiceChannel(Role role, Category category, DiscordTeam team) {
+    private RestAction<? extends Object> createTeamVoiceChannel(Role role, Category category, DiscordTeam team) {
         Guild guild = role.getGuild();
         return category
                 .createVoiceChannel(team.getName())
@@ -102,7 +107,7 @@ public class PickingPresidentPhase extends APhase {
                 .map(vc -> {
                     team.getVoiceChannel().setGuildId(guild.getIdLong());
                     team.getVoiceChannel().setChannelId(vc.getIdLong());
-                    return null;
+                    return vc;
                 });
     }
 
@@ -136,7 +141,6 @@ public class PickingPresidentPhase extends APhase {
 
         if (!event.getButton().getId().startsWith("pickPresident"))
             return;
-
 
         int indexOfTeam = Integer.parseInt(event.getButton().getId().substring(pollButtonId.length()));
         DiscordTeam team = teams.get(indexOfTeam);

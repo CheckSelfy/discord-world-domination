@@ -28,7 +28,7 @@ replay_pid*
 
 # Ignore Gradle build output directory
 build
-bin/main/languages/lang.properties
+bin/main/*
 .vscode/launch.json
 .vscode/settings.json
 

@@ -3,10 +3,12 @@ package phases;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
-import java.util.regex.Pattern;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import discordentities.DiscordTeam;
 import discordentities.checkers.MessageWithPrivilegeUserChecker;
+import game.entities.Member;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -28,7 +30,6 @@ import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import phases.abstracts.APhase;
 import phases.abstracts.IPhase;
 import util.Constants;
-import util.GameUtil;
 import util.Pair;
 
 // Phase 3. This phase is the longest one: teams are deciding what to do next.
@@ -37,6 +38,7 @@ public class TalkingPhase extends APhase {
     private ArrayList<DiscordTeam> teams;
     private ArrayList<MessageWithPrivilegeUserChecker> controlMessages;
     private ArrayList<ArrayList<RequestStatus>> requests; // stores like a table: requests[homeTeam][guestTeam]
+    private Timer timer;
     // private Game game;
 
     private enum RequestStatus {
@@ -59,7 +61,12 @@ public class TalkingPhase extends APhase {
             controlMessages.add(null);
         }
 
-        sendInfos().flatMap(v -> sendControlMessages()).queue();
+        sendInfos().flatMap(v -> sendControlMessages()).queue(v -> {
+            int seconds = Integer.parseInt(Constants.properties.getProperty("talkingTimeInSeconds"));
+            System.out.println("STARTED " + seconds);
+            timer = new Timer();
+            timer.schedule(new Ender(), seconds * 1000);
+        });
     }
 
     private RestAction<Void> sendInfos() {
@@ -101,44 +108,42 @@ public class TalkingPhase extends APhase {
 
     // button = [send\receive] + <object> + "_" + <subject>
     private List<ActionRow> buildButtons(int teamIndex) {
-        List<Button> send = new ArrayList<>(this.teams.size() - 1);
-        List<Button> receive = new ArrayList<>(this.teams.size() - 1);
-        List<Button> join = new ArrayList<>(this.teams.size() - 1);
+        List<Button> buttons = new ArrayList<>(this.teams.size() - 1);
         for (int i = 0; i < this.teams.size(); i++) {
             if (i == teamIndex) {
                 continue;
             }
 
-            Button sendButton = Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, "Send",
-                    teams.get(i).getEmoji());
-            Button receiveButton = Button.of(ButtonStyle.PRIMARY, "receive" + teamIndex + "_" + i, "Approve",
-                    teams.get(i).getEmoji());
-            Button joinButton = Button.of(ButtonStyle.PRIMARY, "join" + teamIndex + "_" + i, "Join",
-                    teams.get(i).getEmoji());
-
-            if (requests.get(teamIndex).get(i).equals(RequestStatus.NO)) {
-                sendButton = sendButton.asEnabled();
-            } else {
-                sendButton = sendButton.asDisabled();
-            }
-
-            if (requests.get(i).get(teamIndex).equals(RequestStatus.SENT)) {
-                receiveButton = receiveButton.asEnabled();
-            } else {
-                receiveButton = receiveButton.asDisabled();
+            if (requests.get(i).get(teamIndex).equals(RequestStatus.APPROVED)) {
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, "Send",
+                        teams.get(i).getEmoji()).asDisabled());
+                continue;
             }
 
             if (requests.get(teamIndex).get(i).equals(RequestStatus.APPROVED)) {
-                joinButton = joinButton.asEnabled();
-            } else {
-                joinButton = joinButton.asDisabled();
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "join" + teamIndex + "_" + i, "Join",
+                        teams.get(i).getEmoji()));
+                continue;
             }
 
-            send.add(sendButton);
-            receive.add(receiveButton);
-            join.add(joinButton);
+            if (requests.get(i).get(teamIndex).equals(RequestStatus.SENT)) {
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "receive" + teamIndex + "_" + i, "Approve",
+                        teams.get(i).getEmoji()));
+                continue;
+            }
+
+            if (requests.get(teamIndex).get(i).equals(RequestStatus.NO)) {
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, "Send",
+                        teams.get(i).getEmoji()));
+                continue;
+            } else if (requests.get(teamIndex).get(i).equals(RequestStatus.SENT)) {
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, "Send",
+                        teams.get(i).getEmoji()).asDisabled());
+                continue;
+            }
         }
-        return List.of(ActionRow.of(send), ActionRow.of(receive), ActionRow.of(join));
+
+        return List.of(ActionRow.of(buttons));
     }
 
     private RestAction<Void> sendControlMessages() {
@@ -202,12 +207,12 @@ public class TalkingPhase extends APhase {
             requests.get(guestTeam).set(homeTeam, RequestStatus.SENT);
             System.out.println("Send request from '" + teams.get(homeTeam).getName() + "' to '"
                     + teams.get(guestTeam).getName() + "'");
-            event.reply("Ok!").setEphemeral(true).flatMap(v -> updateMessage(homeTeam))
+            event.deferEdit().flatMap(v -> updateMessage(homeTeam))
                     .flatMap(m -> updateMessage(guestTeam)).queue();
         } else if (str.startsWith("receive")) {
             str = str.substring("receive".length());
             Pair<Integer, Integer> parsedIndexes = parseButtonTeams(str);
-            int guestTeam = parsedIndexes.getFirst(); 
+            int guestTeam = parsedIndexes.getFirst();
             int homeTeam = parsedIndexes.getSecond(); // it's us
             if (!teams.get(guestTeam).isPresident(event.getUser().getIdLong())) {
                 event.reply("You are not the president.").setEphemeral(true).queue();
@@ -216,43 +221,72 @@ public class TalkingPhase extends APhase {
             requests.get(homeTeam).set(guestTeam, RequestStatus.APPROVED);
             System.out.println("Accepted request from '" + teams.get(guestTeam).getName() + "' to '"
                     + teams.get(homeTeam).getName() + "'");
-            event.reply("Ok!").setEphemeral(true).flatMap(v -> updateMessage(homeTeam))
+            event.deferEdit().flatMap(v -> updateMessage(homeTeam))
                     .flatMap(m -> updateMessage(guestTeam)).queue();
         } else if (str.startsWith("join")) {
             str = str.substring("send".length());
             Pair<Integer, Integer> parsedIndexes = parseButtonTeams(str);
             int guestTeam = parsedIndexes.getFirst(); // it's us
-            int homeTeam = parsedIndexes.getSecond(); 
+            int homeTeam = parsedIndexes.getSecond();
             if (!teams.get(guestTeam).isPresident(event.getUser().getIdLong())) {
                 event.reply("You are not the president.").setEphemeral(true).queue();
                 return;
             }
 
-            VoiceChannel homeTeamVC = getJDA().getVoiceChannelById(teams.get(homeTeam).getVoiceChannel().getChannelId());
-
             event.getChannel().asVoiceChannel().retrieveMessageById(event.getMessageIdLong()).flatMap(
-                msg -> msg.getReaction(Emoji.fromFormatted(Constants.bundle.getString("join_delegate_emoji"))).retrieveUsers())
-            .flatMap(listOfUsers -> {
-                listOfUsers.removeIf(user -> user.isBot());
-                if (listOfUsers.isEmpty()) {
-                    return event.reply("Pick emoji [debug]");
-                }
-                List<RestAction<Void>> actions = new ArrayList<>();
-                Guild guild = event.getGuild();
-                System.out.println("Moving " + listOfUsers);
-                for (User user: listOfUsers) {
-                    actions.add(
-                    guild.moveVoiceMember(
-                        guild.getMemberById(user.getIdLong()),
-                        homeTeamVC
-                    ));
-                }
-                return event.reply("Joining...").setEphemeral(true).flatMap(v ->
-                    RestAction.allOf(actions)
-                ).flatMap(v -> null);
-            }).queue();
+                    msg -> msg.getReaction(Emoji.fromFormatted(Constants.bundle.getString("join_delegate_emoji")))
+                            .retrieveUsers())
+                    .flatMap(listOfUsers -> moveUsers(listOfUsers, event, homeTeam, guestTeam)).queue();
         }
     }
+
+    private RestAction<? extends Object> moveUsers(List<User> listOfUsers, ButtonInteractionEvent event, int homeTeam,
+            int guestTeam) {
+        VoiceChannel homeTeamVC = getJDA()
+                .getVoiceChannelById(teams.get(homeTeam).getVoiceChannel().getChannelId());
+        listOfUsers.removeIf(user -> user.isBot());
+        if (listOfUsers.isEmpty()) {
+            return event.reply("Click running man emoji [debug]").setEphemeral(true);
+        }
+
+        requests.get(guestTeam).set(homeTeam, RequestStatus.NO);
+
+        List<RestAction<Void>> actions = new ArrayList<>();
+        Guild guild = event.getGuild();
+        System.out.println("Moving " + listOfUsers);
+        for (User user : listOfUsers) {
+            actions.add(
+                    guild.moveVoiceMember(
+                            guild.getMemberById(user.getIdLong()),
+                            homeTeamVC));
+        }
+        return event.deferEdit()
+                .flatMap(v -> RestAction.allOf(actions))
+                .flatMap(v -> updateMessage(guestTeam))
+                .flatMap(v -> updateMessage(homeTeam));
+    }
+
+    private RestAction<? extends Object> moveAllToHomes() {
+        List<RestAction<Void>> actions = new ArrayList<>();
+        Guild guild = getJDA().getGuildById(teams.get(0).getVoiceChannel().getGuildId());
+        for (DiscordTeam team : teams) {
+            VoiceChannel vc = getJDA().getVoiceChannelById(team.getVoiceChannel().getChannelId());
+            for (Member member : team.getMembers()) {
+                actions.add(guild.moveVoiceMember(guild.getMemberById(member.getUserId()), vc));
+            }
+        }
+        return RestAction.allOf(actions);
+    }
+    
+    private class Ender extends TimerTask {
+        @Override
+        public void run() {
+            System.out.println("ENDING!");
+            moveAllToHomes().complete();
+            changeToNextPhase();
+        }
+    }
+        
 
     @Override
     public IPhase nextPhase() {
