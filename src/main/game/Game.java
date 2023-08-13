@@ -36,4 +36,10 @@ public class Game {
         from.pay(amount);
         to.recieve(amount);
     }
+
+    public void sendMissile(Country from, Country to, int cityIndex) { to.getCities()[cityIndex].acceptMissile(); }
+
+    public void developNuclear(Country country) { country.developNuclear(); }
+
+    public void addMissiles(Country country, int count) { country.addMissiles(count); }
 }

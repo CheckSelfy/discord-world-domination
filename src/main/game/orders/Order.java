@@ -15,6 +15,10 @@ public class Order {
 
         public int price();
 
+        public boolean missileRequired();
+
+        public boolean requreNuclear();
+
         public Country getCountry();
     }
 
@@ -22,6 +26,12 @@ public class Order {
         private final Country country;
 
         public Action(Country country) { this.country = country; }
+
+        @Override
+        public boolean missileRequired() { return false; }
+
+        @Override
+        public boolean requreNuclear() { return false; }
 
         public Country getCountry() { return country; }
     }

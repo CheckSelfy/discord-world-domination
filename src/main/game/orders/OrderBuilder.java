@@ -8,7 +8,7 @@ import game.orders.Order.IAction;
 public class OrderBuilder {
     private Country country = null;
     private int curBalance = 0;
-    // private int curBombsCount;
+    private int curMissilesCount = 0;
 
     private ArrayList<IAction> actions = new ArrayList<IAction>();
 
@@ -16,13 +16,28 @@ public class OrderBuilder {
         if (country == null) {
             country = action.getCountry();
             curBalance = country.getBalance();
+            curMissilesCount = country.getMissiles();
         } else if (country != action.getCountry()) {
             throw new RuntimeException("Actions from different countries occured in one OrderBuilder");
         }
 
-        if (curBalance >= action.price()) {
-            curBalance -= action.price();
-            actions.add(action);
+        if (action.missileRequired()) {
+            if (curMissilesCount > 0) {
+                --curMissilesCount;
+                actions.add(action);
+            } else {
+                throw new RuntimeException("Not enoght missiles");
+            }
+        } else {
+            if (action.requreNuclear() && !country.hasNuclear()) {
+                throw new RuntimeException("Nuclear required, but not developed");
+            }
+            if (curBalance >= action.price()) {
+                curBalance -= action.price();
+                actions.add(action);
+            } else {
+                throw new RuntimeException("Not enoght balance");
+            }
         }
         return this;
     }

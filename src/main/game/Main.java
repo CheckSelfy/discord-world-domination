@@ -1,6 +1,7 @@
 package game;
 
 import game.orders.*;
+import game.orders.Order.IAction;
 import game.entities.*;
 
 public class Main {
@@ -13,28 +14,39 @@ public class Main {
     static final Country[] countries = { green, yellow };
 
     public static void main(String[] args) {
-        Game game = new Game(countries);
-
-        System.out.println("countreis:");
-        for (Country country : game.getCountries()) {
-            System.out.println(country);
-        }
-
-        Order order = createOrder();
-        game.acceptOrder(order);
-
-        System.out.println("countreis:");
-        for (Country country : game.getCountries()) {
-            System.out.println(country);
+        try {
+            Game game = new Game(countries);
+            printStat(game);
+            game.acceptOrder(createOrder(new DevelopNuclearAction(green)));
+            printStat(game);
+            game.acceptOrder(createOrder(new ShieldCityAction(yellow, 0)));
+            printStat(game);
+            game.acceptOrder(createOrder(new BuildMissilesAction(green, 2)));
+            printStat(game);
+            game.acceptOrder(createOrder(new SendMissileAction(green, yellow, 0)));
+            game.acceptOrder(createOrder(new SendMissileAction(green, yellow, 0)));
+            printStat(game);
+        } catch (Exception e) {
+            System.err.println();
+            System.err.println("==== ERROR!!! ====");
+            System.err.println(e.getMessage());
+            System.err.println();
         }
     }
 
-    static Order createOrder() {
-        var orderBuilder = new OrderBuilder();
-        for (int i = 0; i < 4; i++) {
-            orderBuilder.addAction(new ShieldAction(yellow, i));
+    private static void printStat(Game game) {
+        System.out.println("countreis:");
+        for (Country country : game.getCountries()) {
+            System.out.println(country);
         }
-        orderBuilder.addAction(new MoneyTransferAction(yellow, green, 100));
+        System.out.println();
+    }
+
+    static Order createOrder(IAction... actions) {
+        var orderBuilder = new OrderBuilder();
+        for (IAction action : actions) {
+            orderBuilder.addAction(action);
+        }
         return orderBuilder.build();
     }
 }

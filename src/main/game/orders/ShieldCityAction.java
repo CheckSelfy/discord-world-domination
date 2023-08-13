@@ -4,10 +4,10 @@ import game.Game;
 import game.entities.*;
 import game.orders.Order.Action;;
 
-public class ShieldAction extends Action {
+public class ShieldCityAction extends Action {
     private int cityIndex;
 
-    public ShieldAction(Country country, int cityIndex) {
+    public ShieldCityAction(Country country, int cityIndex) {
         super(country);
         this.cityIndex = cityIndex;
     }

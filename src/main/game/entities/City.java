@@ -2,23 +2,47 @@ package game.entities;
 
 public class City {
     private int lifeLevel;
-    private boolean isShielded;
-    private boolean isAlive;
+    private boolean isShielded = false;
+    private boolean isAlive = true;
     private final String name;
 
     public City(final String name, int lifeLevel) {
         this.name = name;
         this.lifeLevel = lifeLevel;
-        this.isShielded = false;
-        this.isAlive = true;
     }
 
     public int getLifeLevel() { return lifeLevel; }
 
     @Override
-    public String toString() { return (isShielded() ? "{." : ".") + name + (isShielded() ? "}" : ""); }
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (isShielded()) {
+            sb.append('{');
+        }
+        sb.append('.');
+        sb.append(name);
+        sb.append('[');
+        sb.append(isAlive() ? lifeLevel : "X");
+        sb.append(']');
+        if (isShielded()) {
+            sb.append('}');
+        }
+        return sb.toString();
+    }
 
     public boolean isShielded() { return isShielded; }
 
     public void setShield() { this.isShielded = true; }
+
+    public boolean isAlive() { return isAlive; }
+
+    public void acceptMissile() {
+        if (isShielded()) {
+            isShielded = false;
+        } else {
+            isAlive = false;
+            lifeLevel = 0;
+        }
+    }
+
 }
