@@ -104,7 +104,8 @@ public class TalkingPhase extends APhase {
                 .addField(Constants.bundle.getString("talking_sent_requests"), send.toString(), false)
                 .addField(Constants.bundle.getString("talking_recieved_requests"), approved.toString(), false)
                 .addField(Constants.bundle.getString("talking_teams_can_join_to_you"), canJoinToYou.toString(), false)
-                .addField(Constants.bundle.getString("talking_you_can_join_to_teams"), youCanJoin.toString(), false).build();
+                .addField(Constants.bundle.getString("talking_you_can_join_to_teams"), youCanJoin.toString(), false)
+                .build();
     }
 
     // button = [send\approve] + <object> + "_" + <subject>
@@ -116,29 +117,34 @@ public class TalkingPhase extends APhase {
             }
 
             if (requests.get(i).get(teamIndex).equals(RequestStatus.APPROVED)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, Constants.bundle.getString("talking_send_button"),
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i,
+                        Constants.bundle.getString("talking_send_button"),
                         teams.get(i).getEmoji()).asDisabled());
                 continue;
             }
 
             if (requests.get(teamIndex).get(i).equals(RequestStatus.APPROVED)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "join" + teamIndex + "_" + i, Constants.bundle.getString("talking_join_button"),
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "join" + teamIndex + "_" + i,
+                        Constants.bundle.getString("talking_join_button"),
                         teams.get(i).getEmoji()));
                 continue;
             }
 
             if (requests.get(i).get(teamIndex).equals(RequestStatus.SENT)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "approve" + teamIndex + "_" + i, Constants.bundle.getString("talking_approve_button"),
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "approve" + teamIndex + "_" + i,
+                        Constants.bundle.getString("talking_approve_button"),
                         teams.get(i).getEmoji()));
                 continue;
             }
 
             if (requests.get(teamIndex).get(i).equals(RequestStatus.NO)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, Constants.bundle.getString("talking_send_button"),
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i,
+                        Constants.bundle.getString("talking_send_button"),
                         teams.get(i).getEmoji()));
                 continue;
             } else if (requests.get(teamIndex).get(i).equals(RequestStatus.SENT)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, Constants.bundle.getString("talking_send_button"),
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i,
+                        Constants.bundle.getString("talking_send_button"),
                         teams.get(i).getEmoji()).asDisabled());
                 continue;
             }
@@ -225,7 +231,7 @@ public class TalkingPhase extends APhase {
             event.deferEdit().flatMap(v -> updateMessage(homeTeam))
                     .flatMap(m -> updateMessage(guestTeam)).queue();
         } else if (str.startsWith("join")) {
-            str = str.substring("send".length());
+            str = str.substring("join".length());
             Pair<Integer, Integer> parsedIndexes = parseButtonTeams(str);
             int guestTeam = parsedIndexes.getFirst(); // it's us
             int homeTeam = parsedIndexes.getSecond();
