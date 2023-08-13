@@ -31,4 +31,9 @@ public class Game {
     public void shieldCity(Country country, int cityIndex) { country.getCities()[cityIndex].setShield(); }
 
     public void pay(Country country, int price) { country.pay(price); }
+
+    public void transferMoney(Country from, Country to, int amount) {
+        from.pay(amount);
+        to.recieve(amount);
+    }
 }

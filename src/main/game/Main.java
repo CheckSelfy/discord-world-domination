@@ -30,7 +30,11 @@ public class Main {
     }
 
     static Order createOrder() {
-        return new OrderBuilder().addAction(new ShieldAction(yellow, 0)).addAction(new ShieldAction(yellow, 3))
-                .addAction(new ShieldAction(yellow, 1)).addAction(new ShieldAction(yellow, 2)).build();
+        var orderBuilder = new OrderBuilder();
+        for (int i = 0; i < 4; i++) {
+            orderBuilder.addAction(new ShieldAction(yellow, i));
+        }
+        orderBuilder.addAction(new MoneyTransferAction(yellow, green, 100));
+        return orderBuilder.build();
     }
 }

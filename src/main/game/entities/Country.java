@@ -29,4 +29,6 @@ public class Country {
     public int getBalance() { return balance; }
 
     public void pay(int price) { balance -= price; }
+
+    public void recieve(int amount) { balance += amount; }
 }
