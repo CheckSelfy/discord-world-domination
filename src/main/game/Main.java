@@ -24,6 +24,7 @@ public class Main {
             game.acceptOrder(createOrder(new BuildMissilesAction(green, 2)));
             printStat(game);
             game.acceptOrder(createOrder(new SendMissileAction(green, yellow, 0)));
+            printStat(game);
             game.acceptOrder(createOrder(new SendMissileAction(green, yellow, 0)));
             printStat(game);
         } catch (Exception e) {
