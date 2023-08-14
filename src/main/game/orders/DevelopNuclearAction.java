@@ -9,7 +9,7 @@ public class DevelopNuclearAction extends Action {
 
     @Override
     public void doAction(Game game) {
-        getCountry().pay(price());
+        pay();
         getCountry().developNuclear();
     }
 

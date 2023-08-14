@@ -2,7 +2,6 @@ package game;
 
 import game.orders.*;
 import game.orders.Order.IAction;
-import game.structs.CityPtr;
 import game.entities.*;
 
 public class Main {
@@ -26,8 +25,7 @@ public class Main {
             printStat(game);
             game.acceptOrder(createOrder(new DevelopNuclearAction(green)));
             printStat(game);
-            CityPtr yCityPtr1 = new CityPtr(yellow, 0);
-            game.acceptOrder(createOrder(new ShieldCityAction(yCityPtr1)));
+            game.acceptOrder(createOrder(new ShieldCityAction(yellow, 0), new UpgradeCityAction(yellow, 0)));
             printStat(game);
             game.acceptOrder(createOrder(new BuildMissilesAction(green, 2)));
             printStat(game);
@@ -45,9 +43,9 @@ public class Main {
     }
 
     private static void printStat(Game game) {
-        System.out.println("countreis:");
         for (Country country : game.getCountries()) {
             System.out.println(country);
+            System.out.println();
         }
         System.out.println();
     }

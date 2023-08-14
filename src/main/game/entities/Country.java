@@ -18,7 +18,19 @@ public class Country {
 
     @Override
     public String toString() {
-        return name + " $" + balance + (hasNuclear ? " Nuc " : " ") + "\n" + Arrays.toString(cities);
+        StringBuilder sb = new StringBuilder();
+        sb.append(name);
+        sb.append(" $");
+        sb.append(balance);
+        sb.append(" ");
+        if (hasNuclear) {
+            sb.append("Nuc ");
+            sb.append(missiles);
+        }
+        sb.append("\n");
+        sb.append(Arrays.toString(cities));
+
+        return sb.toString();
     }
 
     public int getLifeLevel() {

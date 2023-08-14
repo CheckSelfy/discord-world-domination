@@ -14,7 +14,7 @@ public class BuildMissilesAction extends Action {
 
     @Override
     public void doAction(Game game) {
-        getCountry().pay(price());
+        pay();
         getCountry().addMissiles(count);
     }
 
