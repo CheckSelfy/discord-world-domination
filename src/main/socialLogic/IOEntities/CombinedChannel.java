@@ -1,10 +1,10 @@
 package socialLogic.IOEntities;
 
-public abstract class ACombinedChannel {
+public class CombinedChannel {
     ITextChannel textChannel;
     IVoiceChannel voiceChannel;
 
-    public ACombinedChannel(ITextChannel textChannel, IVoiceChannel voiceChannel) {
+    public CombinedChannel(ITextChannel textChannel, IVoiceChannel voiceChannel) {
         this.textChannel = textChannel;
         this.voiceChannel = voiceChannel;
     }

@@ -38,8 +38,13 @@ public class Constants {
         teamNames = new ArrayList<>(COUNTRIES_COUNT);
 
         for (int i = 0; i < COUNTRIES_COUNT; i++) {
+            String[] city_names = new String[4];
+            for (int j = 0; j < city_names.length; j++) {
+                city_names[j] = bundle.getString("team" + i + "_city" + j);
+            }
             teamNames.add(new TeamLocalization(Emoji.fromFormatted(bundle.getString("team" + i + "_emoji")),
-                    bundle.getString("team" + i), Integer.parseInt(bundle.getString("team" + i + "_color"), 16)));
+                    bundle.getString("team" + i), city_names,
+                    Integer.parseInt(bundle.getString("team" + i + "_color"), 16)));
         }
     }
 

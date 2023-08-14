@@ -4,11 +4,13 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 public class TeamLocalization {
     private Emoji emoji;
     private String name;
+    private String[] cityNames;
     private int color;
 
-    public TeamLocalization(Emoji emoji, String name, int color) {
+    public TeamLocalization(Emoji emoji, String name, String[] cityNames, int color) {
         this.emoji = emoji;
         this.name = name;
+        this.cityNames = cityNames;
         this.color = color;
     }
 
@@ -37,4 +39,6 @@ public class TeamLocalization {
     public String getFullName() {
         return name + ' ' + emoji.getName(); 
     }
+
+    public String[] getCityNames() { return cityNames; }
 }
