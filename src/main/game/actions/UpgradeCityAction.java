@@ -1,9 +1,8 @@
-package game.orders;
+package game.actions;
 
 import game.Game;
+import game.Order.Action;
 import game.entities.Country;
-import game.orders.Order.Action;
-import util.ActionsProps;
 
 public class UpgradeCityAction extends Action {
     private final int cityIndex;

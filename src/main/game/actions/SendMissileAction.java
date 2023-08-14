@@ -1,9 +1,9 @@
-package game.orders;
+package game.actions;
 
 import game.Game;
+import game.Order.Action;
 import game.entities.City;
 import game.entities.Country;
-import game.orders.Order.Action;
 
 public class SendMissileAction extends Action {
     private final City city;

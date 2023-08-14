@@ -1,9 +1,9 @@
-package game.orders;
+package game;
 
 import java.util.ArrayList;
 
+import game.Order.IAction;
 import game.entities.Country;
-import game.orders.Order.IAction;
 
 public class OrderBuilder {
     private Country country = null;

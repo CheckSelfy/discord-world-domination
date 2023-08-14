@@ -1,8 +1,6 @@
 package game;
 
-import game.orders.*;
-import game.orders.Order.IAction;
-
+import game.Order.IAction;
 import game.entities.*;
 
 public class Game {

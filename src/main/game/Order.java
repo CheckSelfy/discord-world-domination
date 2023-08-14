@@ -1,6 +1,5 @@
-package game.orders;
+package game;
 
-import game.Game;
 import game.entities.Country;
 
 public class Order {

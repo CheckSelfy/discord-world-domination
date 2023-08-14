@@ -1,4 +1,4 @@
-package util;
+package game.actions;
 
 import java.io.FileInputStream;
 import java.io.IOException;
