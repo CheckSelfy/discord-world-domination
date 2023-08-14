@@ -16,12 +16,11 @@ public class TransferMoneyAction extends Action {
 
     @Override
     public void doAction(Game game) {
-        game.transferMoney(getCountry(), transferTo, amount);
+        getCountry().pay(amount);
+        transferTo.recieve(amount);
     }
 
     @Override
-    public int price() {
-        return amount;
-    }
+    public int price() { return amount; }
 
 }

@@ -26,11 +26,12 @@ public class Main {
             printStat(game);
             game.acceptOrder(createOrder(new DevelopNuclearAction(green)));
             printStat(game);
-            CityPtr yCity1 = new CityPtr(yellow, 0);
-            game.acceptOrder(createOrder(new ShieldCityAction(yCity1)));
+            CityPtr yCityPtr1 = new CityPtr(yellow, 0);
+            game.acceptOrder(createOrder(new ShieldCityAction(yCityPtr1)));
             printStat(game);
             game.acceptOrder(createOrder(new BuildMissilesAction(green, 2)));
             printStat(game);
+            City yCity1 = yellow.getCities()[0];
             game.acceptOrder(createOrder(new SendMissileAction(green, yCity1)));
             printStat(game);
             game.acceptOrder(createOrder(new SendMissileAction(green, yCity1)));

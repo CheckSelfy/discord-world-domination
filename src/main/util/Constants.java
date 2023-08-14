@@ -15,9 +15,8 @@ public class Constants {
     public static final ResourceBundle bundle;
     public static final Properties properties;
 
-    public final static ArrayList<TeamLocalization> teamNames;
-
-    public final static int COUNTRIES_COUNT = 6;
+    public static final ArrayList<TeamLocalization> teamNames;
+    public static final int COUNTRIES_COUNT = 6;
 
     static {
         properties = new Properties();

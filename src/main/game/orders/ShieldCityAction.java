@@ -14,12 +14,10 @@ public class ShieldCityAction extends Action {
 
     @Override
     public void doAction(Game game) {
-        game.pay(getCountry(), price());
-        game.shieldCity(getCountry(), cityIndex);
+        getCountry().pay(price());
+        getCountry().getCities()[cityIndex].setShield();
     }
 
     @Override
-    public int price() {
-        return 300;
-    } // TODO: prices
+    public int price() { return 300; } // TODO: prices
 }
