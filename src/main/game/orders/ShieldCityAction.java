@@ -19,5 +19,7 @@ public class ShieldCityAction extends Action {
     }
 
     @Override
-    public int price() { return 300; } // TODO: prices
+    public int price() {
+        return 300;
+    } // TODO: prices
 }

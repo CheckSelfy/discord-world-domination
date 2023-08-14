@@ -20,9 +20,13 @@ public class SendMissileAction extends Action {
     }
 
     @Override
-    public int price() { return 0; }
+    public int price() {
+        return 0;
+    }
 
     @Override
-    public boolean missileRequired() { return true; }
+    public boolean missileRequired() {
+        return true;
+    }
 
 }

@@ -7,9 +7,7 @@ public class GameBuilder {
     int round;
     ArrayList<Country> countries;
 
-    public GameBuilder() {
-    }
+    public GameBuilder() {}
 
-    public GameBuilder(Game round) {
-    }
+    public GameBuilder(Game round) {}
 }

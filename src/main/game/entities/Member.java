@@ -17,7 +17,8 @@ public class Member {
 
     // public boolean isPresident() { return isPresident; }
 
-    // public void setPresident(boolean isPresident) { this.isPresident = isPresident; }
+    // public void setPresident(boolean isPresident) { this.isPresident =
+    // isPresident; }
 
     public Team getTeam() { return team; }
 

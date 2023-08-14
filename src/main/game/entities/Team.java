@@ -28,13 +28,9 @@ public class Team extends TeamLocalization {
 
     public Set<Member> getMembers() { return members; }
 
-    public Member getPresident() {
-        return president;
-    }
+    public Member getPresident() { return president; }
 
-    public boolean isPresident(long userId) {
-        return getPresident().getUserId() == userId;
-    }
+    public boolean isPresident(long userId) { return getPresident().getUserId() == userId; }
 
     public void setPresident(long userId) {
         members.iterator().forEachRemaining(member -> {

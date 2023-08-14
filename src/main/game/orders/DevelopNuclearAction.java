@@ -5,7 +5,9 @@ import game.entities.Country;
 import game.orders.Order.Action;
 
 public class DevelopNuclearAction extends Action {
-    public DevelopNuclearAction(Country country) { super(country); }
+    public DevelopNuclearAction(Country country) {
+        super(country);
+    }
 
     @Override
     public void doAction(Game game) {
@@ -14,6 +16,8 @@ public class DevelopNuclearAction extends Action {
     }
 
     @Override
-    public int price() { return 500; }
+    public int price() {
+        return 500;
+    }
 
 }

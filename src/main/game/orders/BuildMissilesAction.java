@@ -13,12 +13,18 @@ public class BuildMissilesAction extends Action {
     }
 
     @Override
-    public void doAction(Game game) { game.addMissiles(getCountry(), count); }
+    public void doAction(Game game) {
+        game.addMissiles(getCountry(), count);
+    }
 
     @Override
-    public int price() { return count * 150; }
+    public int price() {
+        return count * 150;
+    }
 
     @Override
-    public boolean requreNuclear() { return true; }
+    public boolean requreNuclear() {
+        return true;
+    }
 
 }
