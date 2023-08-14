@@ -3,6 +3,7 @@ package game.orders;
 import game.Game;
 import game.entities.Country;
 import game.orders.Order.Action;
+import util.ActionsProps;
 
 public class ShieldCityAction extends Action {
     private final int cityIndex;
@@ -19,5 +20,5 @@ public class ShieldCityAction extends Action {
     }
 
     @Override
-    public int price() { return 300; } // TODO: prices
+    public int price() { return ActionsProps.shieldCityPrice(); }
 }

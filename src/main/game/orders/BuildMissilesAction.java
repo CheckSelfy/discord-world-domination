@@ -3,6 +3,7 @@ package game.orders;
 import game.Game;
 import game.entities.Country;
 import game.orders.Order.Action;
+import util.ActionsProps;
 
 public class BuildMissilesAction extends Action {
     private final int count;
@@ -14,13 +15,13 @@ public class BuildMissilesAction extends Action {
 
     @Override
     public void doAction(Game game) {
-        game.harmEcology(5 * count);
+        game.harmEcology(ActionsProps.buildMissilesHarm() * count);
         pay();
         getCountry().addMissiles(count);
     }
 
     @Override
-    public int price() { return count * 150; }
+    public int price() { return ActionsProps.buildMissilesPrice() * count; }
 
     @Override
     public boolean requreNuclear() { return true; }

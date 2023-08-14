@@ -3,6 +3,7 @@ package game.orders;
 import game.Game;
 import game.entities.Country;
 import game.orders.Order.Action;
+import util.ActionsProps;
 
 public class UpgradeCityAction extends Action {
     private final int cityIndex;
@@ -19,6 +20,6 @@ public class UpgradeCityAction extends Action {
     }
 
     @Override
-    public int price() { return 150; }
+    public int price() { return ActionsProps.upgradeCityPrice(); }
 
 }

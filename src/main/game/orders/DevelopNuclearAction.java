@@ -3,6 +3,7 @@ package game.orders;
 import game.Game;
 import game.entities.Country;
 import game.orders.Order.Action;
+import util.ActionsProps;
 
 public class DevelopNuclearAction extends Action {
     public DevelopNuclearAction(Country country) { super(country); }
@@ -15,6 +16,6 @@ public class DevelopNuclearAction extends Action {
     }
 
     @Override
-    public int price() { return 500; }
+    public int price() { return ActionsProps.developNuclearPrice(); }
 
 }
