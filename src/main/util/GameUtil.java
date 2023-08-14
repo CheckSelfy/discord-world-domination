@@ -17,22 +17,22 @@ public class GameUtil {
         return RestAction.allOf(reactions);
     }
 
-    public static RestAction<List<Void>> putCountriesEmoji(Message msg, ArrayList<? extends Team> teams, Team exceptFor) {
+    public static RestAction<?> putCountriesEmoji(Message msg, List<? extends Team> teams, Team exceptFor) {
         List<RestAction<Void>> reactions = new ArrayList<>(Constants.COUNTRIES_COUNT);
         for (Team team: teams) {
             if (team.equals(exceptFor)) 
                 continue;
-            reactions.add(msg.addReaction(team.getEmoji()));
+            reactions.add(msg.addReaction(team.getLocalization().getEmoji()));
         }
         return RestAction.allOf(reactions);
     }
 
-    public static RestAction<List<Void>> putCountriesEmoji(Message msg, ArrayList<? extends Team> teams, int exceptForIndex) {
+    public static RestAction<?> putCountriesEmoji(Message msg, ArrayList<? extends Team> teams, int exceptForIndex) {
         List<RestAction<Void>> reactions = new ArrayList<>(Constants.COUNTRIES_COUNT);
         for (int i = 0; i < teams.size(); i++) {
             if (i == exceptForIndex) 
                 continue;
-            reactions.add(msg.addReaction(teams.get(i).getEmoji()));
+            reactions.add(msg.addReaction(teams.get(i).getLocalization().getEmoji()));
         }
         return RestAction.allOf(reactions);
     }

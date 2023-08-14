@@ -18,14 +18,14 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
-import phases.abstracts.APhase;
 import phases.abstracts.IPhase;
+import phases.abstracts.PhaseWithTimer;
 import util.Constants;
 import util.DiscordUtil;
 import util.GameUtil;
 
 // Phase 1. This object collects people for upcoming game
-public class CollectorPhase extends APhase {
+public class CollectorPhase extends PhaseWithTimer {
     MessageWithPrivilegeUserChecker message;
     ArrayList<Set<Long>> teams;
 
@@ -40,11 +40,14 @@ public class CollectorPhase extends APhase {
 
         event.getHook()
                 .sendMessageEmbeds(
-                        Constants.getEmptyEmbedBuilder().setDescription(Constants.bundle.getString("start_embedDescription")).build())
+                        Constants.getEmptyEmbedBuilder()
+                                .setDescription(Constants.bundle.getString("start_embedDescription")).build())
                 .flatMap(msg -> {
                     message = new MessageWithPrivilegeUserChecker(msg, event.getUser().getIdLong());
                     return GameUtil.putCountriesEmoji(msg);
-                }).complete();
+                }).queue();
+        
+        schedule(this::timerEndedMethod);
     }
 
     public static int getTeamByEmoji(Emoji emoji) {
@@ -135,12 +138,23 @@ public class CollectorPhase extends APhase {
     }
 
     @Override
-    public IPhase nextPhase() { return new PickingPresidentPhase(getJDA(), teams, message); }
+    public IPhase nextPhase() {
+        return new PickingPresidentPhase(getJDA(), teams, message);
+    }
 
     @Override
     public void onMessageDelete(MessageDeleteEvent e) {
         if (message.check(e.getGuild().getIdLong(), e.getChannel().getIdLong(), e.getMessageIdLong())) {
             getJDA().removeEventListener(this); // game deleted.
         }
+    }
+
+    @Override
+    public int getDurationInSeconds() {
+        return Integer.parseInt(Constants.properties.getProperty("collectorPhaseDurationInSeconds"));
+    }
+
+    public void timerEndedMethod() { 
+        getJDA().getTextChannelById(message.getChannelId()).deleteMessageById(message.getMessageId()).queue();
     }
 }

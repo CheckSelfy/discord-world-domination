@@ -5,17 +5,18 @@ import java.util.Set;
 
 import languages.TeamLocalization;
 
-public class Team extends TeamLocalization {
+public class Team {
     Set<Member> members;
+    TeamLocalization localization;
     Member president;
 
     public Team(Team team) {
-        super((TeamLocalization) team);
+        this.localization = team.localization;
         this.members = team.members;
+        this.president = team.president;
     }
 
     public Team(Set<Long> usersId, TeamLocalization localization) {
-        super(localization);
         assert (!usersId.isEmpty()); // creating empty Team is forbidden
 
         Set<Member> newMembers = new HashSet<>(usersId.size());
@@ -41,5 +42,9 @@ public class Team extends TeamLocalization {
             if (member.getUserId() == userId)
                 president = member;
         });
+    }
+
+    public TeamLocalization getLocalization() {
+        return localization;
     }
 }

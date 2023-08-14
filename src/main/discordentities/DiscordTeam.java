@@ -17,16 +17,24 @@ public class DiscordTeam extends Team {
         role = new RoleChecker(0, 0);
     }
 
-    public ChannelChecker getVoiceChannel() { return voiceChannel; }
+    public ChannelChecker getVoiceChannel() {
+        return voiceChannel;
+    }
 
-    public RoleChecker getRole() { return role; }
+    public RoleChecker getRole() {
+        return role;
+    }
 
     public void setGuildId(long guildId) {
         voiceChannel.setGuildId(guildId);
         role.setGuildId(guildId);
     }
 
-    public void setRoleId(long roleId) { role.setRoleId(roleId); }
+    public void setRoleId(long roleId) {
+        role.setRoleId(roleId);
+    }
 
-    public void setVoiceChannel(long channelId) { voiceChannel.setChannelId(channelId); }
+    public void setVoiceChannel(long channelId) {
+        voiceChannel.setChannelId(channelId);
+    }
 }

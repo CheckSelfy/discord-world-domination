@@ -74,7 +74,7 @@ public class TalkingPhase extends APhase {
         for (int i = 0; i < teams.size(); i++) {
             DiscordTeam team = teams.get(i);
             VoiceChannel vc = getJDA().getVoiceChannelById(team.getVoiceChannel().getChannelId());
-            messages.add(vc.sendMessage(team.getFullName() + " info [DEBUG] [WILL DONE LATER]"));
+            messages.add(vc.sendMessage(team.getLocalization().getFullName() + " info [DEBUG] [WILL DONE LATER]"));
         }
         return RestAction.allOf(messages).map(v -> null);
     }
@@ -88,23 +88,24 @@ public class TalkingPhase extends APhase {
             if (i == teamIndex)
                 continue;
             if (requests.get(teamIndex).get(i).equals(RequestStatus.SENT)) {
-                send.add(teams.get(i).getFullName());
+                send.add(teams.get(i).getLocalization().getFullName());
             }
             if (requests.get(i).get(teamIndex).equals(RequestStatus.SENT)) {
-                approved.add(teams.get(i).getFullName());
+                approved.add(teams.get(i).getLocalization().getFullName());
             }
             if (requests.get(teamIndex).get(i).equals(RequestStatus.APPROVED)) {
-                youCanJoin.add(teams.get(i).getFullName());
+                youCanJoin.add(teams.get(i).getLocalization().getFullName());
             }
             if (requests.get(i).get(teamIndex).equals(RequestStatus.APPROVED)) {
-                canJoinToYou.add(teams.get(i).getFullName());
+                canJoinToYou.add(teams.get(i).getLocalization().getFullName());
             }
         }
         return new EmbedBuilder().setTitle("game_name [debug]")
                 .addField(Constants.bundle.getString("talking_sent_requests"), send.toString(), false)
                 .addField(Constants.bundle.getString("talking_recieved_requests"), approved.toString(), false)
                 .addField(Constants.bundle.getString("talking_teams_can_join_to_you"), canJoinToYou.toString(), false)
-                .addField(Constants.bundle.getString("talking_you_can_join_to_teams"), youCanJoin.toString(), false).build();
+                .addField(Constants.bundle.getString("talking_you_can_join_to_teams"), youCanJoin.toString(), false)
+                .build();
     }
 
     // button = [send\approve] + <object> + "_" + <subject>
@@ -116,30 +117,35 @@ public class TalkingPhase extends APhase {
             }
 
             if (requests.get(i).get(teamIndex).equals(RequestStatus.APPROVED)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, Constants.bundle.getString("talking_send_button"),
-                        teams.get(i).getEmoji()).asDisabled());
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i,
+                        Constants.bundle.getString("talking_send_button"),
+                        teams.get(i).getLocalization().getEmoji()).asDisabled());
                 continue;
             }
 
             if (requests.get(teamIndex).get(i).equals(RequestStatus.APPROVED)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "join" + teamIndex + "_" + i, Constants.bundle.getString("talking_join_button"),
-                        teams.get(i).getEmoji()));
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "join" + teamIndex + "_" + i,
+                        Constants.bundle.getString("talking_join_button"),
+                        teams.get(i).getLocalization().getEmoji()));
                 continue;
             }
 
             if (requests.get(i).get(teamIndex).equals(RequestStatus.SENT)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "approve" + teamIndex + "_" + i, Constants.bundle.getString("talking_approve_button"),
-                        teams.get(i).getEmoji()));
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "approve" + teamIndex + "_" + i,
+                        Constants.bundle.getString("talking_approve_button"),
+                        teams.get(i).getLocalization().getEmoji()));
                 continue;
             }
 
             if (requests.get(teamIndex).get(i).equals(RequestStatus.NO)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, Constants.bundle.getString("talking_send_button"),
-                        teams.get(i).getEmoji()));
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i,
+                        Constants.bundle.getString("talking_send_button"),
+                        teams.get(i).getLocalization().getEmoji()));
                 continue;
             } else if (requests.get(teamIndex).get(i).equals(RequestStatus.SENT)) {
-                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i, Constants.bundle.getString("talking_send_button"),
-                        teams.get(i).getEmoji()).asDisabled());
+                buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i,
+                        Constants.bundle.getString("talking_send_button"),
+                        teams.get(i).getLocalization().getEmoji()).asDisabled());
                 continue;
             }
         }
@@ -206,8 +212,8 @@ public class TalkingPhase extends APhase {
                 return;
             }
             requests.get(guestTeam).set(homeTeam, RequestStatus.SENT);
-            System.out.println("Send request from '" + teams.get(homeTeam).getName() + "' to '"
-                    + teams.get(guestTeam).getName() + "'");
+            System.out.println("Send request from '" + teams.get(homeTeam).getLocalization().getName() + "' to '"
+                    + teams.get(guestTeam).getLocalization().getName() + "'");
             event.deferEdit().flatMap(v -> updateMessage(homeTeam))
                     .flatMap(m -> updateMessage(guestTeam)).queue();
         } else if (str.startsWith("approve")) {
@@ -220,8 +226,8 @@ public class TalkingPhase extends APhase {
                 return;
             }
             requests.get(homeTeam).set(guestTeam, RequestStatus.APPROVED);
-            System.out.println("Accepted request from '" + teams.get(guestTeam).getName() + "' to '"
-                    + teams.get(homeTeam).getName() + "'");
+            System.out.println("Accepted request from '" + teams.get(guestTeam).getLocalization().getName() + "' to '"
+                    + teams.get(homeTeam).getLocalization().getName() + "'");
             event.deferEdit().flatMap(v -> updateMessage(homeTeam))
                     .flatMap(m -> updateMessage(guestTeam)).queue();
         } else if (str.startsWith("join")) {
