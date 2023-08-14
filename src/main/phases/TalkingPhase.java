@@ -119,7 +119,7 @@ public class TalkingPhase extends APhase {
             if (requests.get(i).get(teamIndex).equals(RequestStatus.APPROVED)) {
                 buttons.add(Button.of(ButtonStyle.PRIMARY, "send" + teamIndex + "_" + i,
                         Constants.bundle.getString("talking_send_button"),
-                        teams.get(i).getLocalization().getEmoji()).asDisabled());
+                        teams.get(i).getEmoji()).asDisabled());
                 continue;
             }
 
@@ -231,7 +231,7 @@ public class TalkingPhase extends APhase {
             event.deferEdit().flatMap(v -> updateMessage(homeTeam))
                     .flatMap(m -> updateMessage(guestTeam)).queue();
         } else if (str.startsWith("join")) {
-            str = str.substring("send".length());
+            str = str.substring("join".length());
             Pair<Integer, Integer> parsedIndexes = parseButtonTeams(str);
             int guestTeam = parsedIndexes.getFirst(); // it's us
             int homeTeam = parsedIndexes.getSecond();
