@@ -2,9 +2,9 @@ package discordentities;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
-import socialLogic.IOEntities.ITextChannel;
-import socialLogic.IOEntities.IUser;
-import socialLogic.IOEntities.IVoiceChannel;
+import social_logic.io_entities.ITextChannel;
+import social_logic.io_entities.IUser;
+import social_logic.io_entities.IVoiceChannel;
 
 public class DiscordVoiceChannel implements ITextChannel, IVoiceChannel {
     private DiscordManager manager;

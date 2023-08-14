@@ -1,7 +1,7 @@
 package discordentities;
 
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import socialLogic.IOEntities.ITextChannel;
+import social_logic.io_entities.ITextChannel;
 
 public class DiscordTextChannel implements ITextChannel {
     private DiscordManager manager;

@@ -1,7 +1,7 @@
-package socialLogic.phases;
+package social_logic.phases;
 
-import socialLogic.phases.abstracts.APhase;
-import socialLogic.phases.abstracts.IPhase;
+import social_logic.phases.abstracts.APhase;
+import social_logic.phases.abstracts.IPhase;
 
 public class TalkingPhase extends APhase {
     public TalkingPhase(int round) { super(round); }

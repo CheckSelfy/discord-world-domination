@@ -1,4 +1,4 @@
-package socialLogic.phases.abstracts;
+package social_logic.phases.abstracts;
 
 public abstract class APhase implements IPhase{
     int round;

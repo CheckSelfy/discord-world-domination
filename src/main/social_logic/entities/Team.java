@@ -1,12 +1,12 @@
-package socialLogic.entities;
+package social_logic.entities;
 
 import java.util.Set;
 
 import game.entities.City;
 import game.entities.Country;
 import languages.TeamLocalization;
-import socialLogic.IOEntities.CombinedChannel;
-import socialLogic.IOEntities.IUser;
+import social_logic.io_entities.CombinedChannel;
+import social_logic.io_entities.IUser;
 import util.Constants;
 
 public class Team extends Country {

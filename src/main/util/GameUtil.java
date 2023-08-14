@@ -6,7 +6,7 @@ import java.util.List;
 import languages.TeamLocalization;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.requests.RestAction;
-import socialLogic.entities.Team;
+import social_logic.entities.Team;
 
 public class GameUtil {
     public static RestAction<List<Void>> putCountriesEmoji(Message msg) {

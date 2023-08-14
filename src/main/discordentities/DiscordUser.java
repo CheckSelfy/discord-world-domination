@@ -1,6 +1,6 @@
 package discordentities;
 
-import socialLogic.IOEntities.IUser;
+import social_logic.io_entities.IUser;
 
 public class DiscordUser implements IUser {
     private long userId;

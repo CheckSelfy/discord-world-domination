@@ -28,7 +28,7 @@ import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import phases.abstracts.APhase;
 import phases.abstracts.IPhase;
-import socialLogic.entities.Team;
+import social_logic.entities.Team;
 import util.Constants;
 import util.DiscordUtil;
 

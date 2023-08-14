@@ -1,4 +1,4 @@
-package socialLogic.IOEntities;
+package social_logic.io_entities;
 
 import java.util.Collection;
 
