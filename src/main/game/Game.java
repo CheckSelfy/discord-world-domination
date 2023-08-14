@@ -2,11 +2,12 @@ package game;
 
 import game.orders.*;
 import game.orders.Order.IAction;
+
 import game.entities.*;
 
 public class Game {
     private final Country[] countries;
-    // private int ecologyLevel = 90;
+    private int ecologyLevel = 90;
 
     public Game(Country[] countries) { this.countries = countries; }
 
@@ -25,4 +26,21 @@ public class Game {
             action.doAction(this);
         }
     }
+
+    public void improveEcology() { ecologyLevel += 5; } // TODO: exact values
+
+    public void harmEcology(int value) { ecologyLevel -= value; }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Ecology: ");
+        builder.append(ecologyLevel);
+        builder.append("%\n");
+        for (Country country : countries) {
+            builder.append(country).append("\n\n");
+        }
+        return builder.toString();
+    }
+
 }

@@ -25,7 +25,8 @@ public class Main {
             printStat(game);
             game.acceptOrder(createOrder(new DevelopNuclearAction(green)));
             printStat(game);
-            game.acceptOrder(createOrder(new ShieldCityAction(yellow, 0), new UpgradeCityAction(yellow, 0)));
+            game.acceptOrder(createOrder(new ShieldCityAction(yellow, 0), new UpgradeCityAction(yellow, 0),
+                    new ImproveEcologyAction(yellow)));
             printStat(game);
             game.acceptOrder(createOrder(new BuildMissilesAction(green, 2)));
             printStat(game);
@@ -43,10 +44,7 @@ public class Main {
     }
 
     private static void printStat(Game game) {
-        for (Country country : game.getCountries()) {
-            System.out.println(country);
-            System.out.println();
-        }
+        System.out.println(game);
         System.out.println();
     }
 

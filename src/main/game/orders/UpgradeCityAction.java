@@ -19,8 +19,6 @@ public class UpgradeCityAction extends Action {
     }
 
     @Override
-    public int price() {
-        return 150;
-    }
+    public int price() { return 150; }
 
 }
