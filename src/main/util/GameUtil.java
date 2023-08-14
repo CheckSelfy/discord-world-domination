@@ -3,10 +3,10 @@ package util;
 import java.util.ArrayList;
 import java.util.List;
 
-import game.entities.Team;
 import languages.TeamLocalization;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.requests.RestAction;
+import socialLogic.entities.Team;
 
 public class GameUtil {
     public static RestAction<List<Void>> putCountriesEmoji(Message msg) {
