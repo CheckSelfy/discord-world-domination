@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import discordentities.DiscordTeam;
 import discordentities.checkers.MessageWithPrivilegeUserChecker;
 import game.entities.Member;
-import game.entities.Team;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -29,6 +28,7 @@ import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import phases.abstracts.APhase;
 import phases.abstracts.IPhase;
+import socialLogic.entities.Team;
 import util.Constants;
 import util.DiscordUtil;
 
