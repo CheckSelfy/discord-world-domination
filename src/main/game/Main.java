@@ -2,6 +2,7 @@ package game;
 
 import game.orders.*;
 import game.orders.Order.IAction;
+import game.structs.CityPtr;
 import game.entities.*;
 
 public class Main {
@@ -19,13 +20,14 @@ public class Main {
             printStat(game);
             game.acceptOrder(createOrder(new DevelopNuclearAction(green)));
             printStat(game);
-            game.acceptOrder(createOrder(new ShieldCityAction(yellow, 0)));
+            CityPtr yCity1 = new CityPtr(yellow, 0);
+            game.acceptOrder(createOrder(new ShieldCityAction(yCity1)));
             printStat(game);
             game.acceptOrder(createOrder(new BuildMissilesAction(green, 2)));
             printStat(game);
-            game.acceptOrder(createOrder(new SendMissileAction(green, yellow, 0)));
+            game.acceptOrder(createOrder(new SendMissileAction(green, yCity1)));
             printStat(game);
-            game.acceptOrder(createOrder(new SendMissileAction(green, yellow, 0)));
+            game.acceptOrder(createOrder(new SendMissileAction(green, yCity1)));
             printStat(game);
         } catch (Exception e) {
             System.err.println();

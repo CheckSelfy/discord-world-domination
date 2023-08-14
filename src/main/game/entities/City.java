@@ -21,9 +21,8 @@ public class City {
         }
         sb.append('.');
         sb.append(name);
-        sb.append('[');
-        sb.append(isAlive() ? lifeLevel : "X");
-        sb.append(']');
+        sb.append(": ");
+        sb.append(isAlive() ? lifeLevel + "%" : "XXX");
         if (isShielded()) {
             sb.append('}');
         }
