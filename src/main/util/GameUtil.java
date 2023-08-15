@@ -3,7 +3,7 @@ package util;
 import java.util.ArrayList;
 import java.util.List;
 
-import languages.TeamLocalization;
+import languages.CountryDescription;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.requests.RestAction;
 import social_logic.entities.Team;
@@ -11,7 +11,7 @@ import social_logic.entities.Team;
 public class GameUtil {
     public static RestAction<List<Void>> putCountriesEmoji(Message msg) {
         List<RestAction<Void>> reactions = new ArrayList<>(Constants.COUNTRIES_COUNT);
-        for (TeamLocalization loc : Constants.teamNames) {
+        for (CountryDescription loc : Constants.teamNames) {
             reactions.add(msg.addReaction(loc.getEmoji()));
         }
         return RestAction.allOf(reactions);
@@ -22,7 +22,7 @@ public class GameUtil {
         for (Team team: teams) {
             if (team.equals(exceptFor)) 
                 continue;
-            reactions.add(msg.addReaction(team.getLocalization().getEmoji()));
+            reactions.add(msg.addReaction(team.getDescription().getEmoji()));
         }
         return RestAction.allOf(reactions);
     }
@@ -32,7 +32,7 @@ public class GameUtil {
         for (int i = 0; i < teams.size(); i++) {
             if (i == exceptForIndex) 
                 continue;
-            reactions.add(msg.addReaction(teams.get(i).getLocalization().getEmoji()));
+            reactions.add(msg.addReaction(teams.get(i).getDescription().getEmoji()));
         }
         return RestAction.allOf(reactions);
     }

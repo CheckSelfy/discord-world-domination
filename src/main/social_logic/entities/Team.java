@@ -5,16 +5,14 @@ import java.util.Set;
 import game.entities.City;
 import game.entities.Country;
 import languages.CountryDescription;
-import languages.TeamLocalization;
 import social_logic.io_entities.CombinedChannel;
 import social_logic.io_entities.IUser;
-import util.Constants;
 
 public class Team extends Country {
     private Set<IUser> members;
     private IUser president;
     private CombinedChannel channel;
-    private CountryDescription localization;
+    private CountryDescription description;
 
     // TODO: STUB. Change or check it please.
     private static City[] createCities(CountryDescription localization) {
@@ -34,6 +32,7 @@ public class Team extends Country {
         this.members = members;
         this.president = president;
         this.channel = channel;
+        this.description = description;
     }
 
     public boolean isMemberOfTeam(IUser user) { return members.contains(user); }
@@ -44,5 +43,5 @@ public class Team extends Country {
 
     public CombinedChannel getChannel() { return channel; }
 
-    public TeamLocalization getLocalization() { return localization; }
+    public CountryDescription getDescription() { return description; }
 }

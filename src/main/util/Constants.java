@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import languages.TeamLocalization;
+import languages.CountryDescription;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 
@@ -15,7 +15,7 @@ public class Constants {
     public static final ResourceBundle bundle;
     public static final Properties properties;
 
-    public static final ArrayList<TeamLocalization> teamNames;
+    public static final ArrayList<CountryDescription> teamNames;
     public static final int COUNTRIES_COUNT = 6;
 
     static {
@@ -42,7 +42,7 @@ public class Constants {
             for (int j = 0; j < city_names.length; j++) {
                 city_names[j] = bundle.getString("team" + i + "_city" + j);
             }
-            teamNames.add(new TeamLocalization(Emoji.fromFormatted(bundle.getString("team" + i + "_emoji")),
+            teamNames.add(new CountryDescription(Emoji.fromFormatted(bundle.getString("team" + i + "_emoji")),
                     bundle.getString("team" + i), city_names,
                     Integer.parseInt(bundle.getString("team" + i + "_color"), 16)));
         }
