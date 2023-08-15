@@ -5,7 +5,7 @@ import game.entities.*;
 
 public class Game {
     private final Country[] countries;
-    private int ecologyLevel = 90;
+    private int ecologyLevel = 90; // TODO: initial balance
 
     public Game(Country[] countries) { this.countries = countries; }
 

@@ -21,7 +21,7 @@ public class SendMissileAction extends Action {
     }
 
     @Override
-    public int price() { return 0; }
+    public int price() { return ActionsProps.sendMissilesPrice(); }
 
     @Override
     public boolean missileRequired() { return true; }

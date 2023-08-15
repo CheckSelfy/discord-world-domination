@@ -23,6 +23,10 @@ public class Main {
         try {
             Game game = new Game(countries);
             printStat(game);
+            game.acceptOrder(createOrder(new ImposeSancionsAction(yellow, green)));
+            printStat(game);
+            game.acceptOrder(createOrder(new RemoveSanctionsAction(yellow, green)));
+            printStat(game);
             game.acceptOrder(createOrder(new DevelopNuclearAction(green)));
             printStat(game);
             game.acceptOrder(createOrder(new ShieldCityAction(yellow, 0), new UpgradeCityAction(yellow, 0),
