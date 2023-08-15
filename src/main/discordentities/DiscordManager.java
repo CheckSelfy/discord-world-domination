@@ -6,7 +6,7 @@ public class DiscordManager {
     private JDA jda;
     private DiscordGuild guild;
     // I assume that we can differ games only by guild => different games have
-    // different guilds. But it can be easily changed to category.
+    // different guilds. But it can be easily changed to DiscordCategory.
 
     public DiscordManager(JDA jda, DiscordGuild guild) {
         this.jda = jda;
@@ -15,7 +15,6 @@ public class DiscordManager {
 
     public JDA getJDA() { return jda; }
 
-    // Bad naming though
     public DiscordGuild getDiscordGuild() { return guild; }
 
     public net.dv8tion.jda.api.entities.Guild getGuild() { return jda.getGuildById(guild.getId()); }

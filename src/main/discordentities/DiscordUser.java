@@ -7,15 +7,11 @@ public class DiscordUser implements IUser {
 
     public DiscordUser(long userId) { this.userId = userId; }
 
+    @Override
     public long getUserId() { return userId; }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (int) (userId ^ (userId >>> 32));
-        return result;
-    }
+    public int hashCode() { return (int) userId; }
 
     @Override
     public boolean equals(Object obj) {

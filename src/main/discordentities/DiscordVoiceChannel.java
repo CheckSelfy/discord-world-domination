@@ -13,8 +13,7 @@ public class DiscordVoiceChannel implements ITextChannel, IVoiceChannel {
     @Override
     public void moveUser(IUser user) {
         Guild guild = manager.getGuild();
-        guild.moveVoiceMember(guild.getMemberById(((DiscordUser) user).getUserId()), getChannel()).queue();
-        // It's not bad to explicit cast, because it's guarantee that social logic have only one IUser type.
+        guild.moveVoiceMember(guild.getMemberById(user.getUserId()), getChannel()).queue();
     }
 
     public VoiceChannel getChannel() { return manager.getJDA().getVoiceChannelById(getId()); }
