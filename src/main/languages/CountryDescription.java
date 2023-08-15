@@ -1,23 +1,18 @@
 package languages;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 
-public class TeamLocalization {
+// CountryData
+public class CountryDescription {
     private Emoji emoji;
     private String name;
     private String[] cityNames;
     private int color;
 
-    public TeamLocalization(Emoji emoji, String name, String[] cityNames, int color) {
+    public CountryDescription(Emoji emoji, String name, String[] cityNames, int color) {
         this.emoji = emoji;
         this.name = name;
         this.cityNames = cityNames;
         this.color = color;
-    }
-
-    public TeamLocalization(TeamLocalization other) {
-        emoji = other.getEmoji();
-        name = other.getName();
-        color = other.getColor();
     }
 
     public Emoji getEmoji() {

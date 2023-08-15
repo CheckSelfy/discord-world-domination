@@ -9,11 +9,7 @@ public class CombinedChannel {
         this.voiceChannel = voiceChannel;
     }
 
-    public ITextChannel getTextChannel() {
-        return textChannel;
-    }
+    public ITextChannel getTextChannel() { return textChannel; }
 
-    public IVoiceChannel getVoiceChannel() {
-        return voiceChannel;
-    }
+    public IVoiceChannel getVoiceChannel() { return voiceChannel; }
 }
