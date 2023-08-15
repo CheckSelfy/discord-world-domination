@@ -25,9 +25,7 @@ public class Game {
         }
     }
 
-    public void improveEcology() { ecologyLevel += 5; } // TODO: exact values
-
-    public void harmEcology(int value) { ecologyLevel -= value; }
+    public void impactEcology(int value) { ecologyLevel += value; }
 
     @Override
     public String toString() {

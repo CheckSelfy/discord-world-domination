@@ -15,7 +15,7 @@ public class SendMissileAction extends Action {
 
     @Override
     public void doAction(Game game) {
-        game.harmEcology(5);
+        game.impactEcology(ActionsProps.sendMissileEcoImpact());
         getCountry().removeMissile();
         city.acceptMissile();
     }

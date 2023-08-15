@@ -19,23 +19,27 @@ public class ActionsProps {
 
     public static int developNuclearPrice() { return getPrice("developNuclear"); }
 
-    public static int developNuclearHarm() { return getHarm("developNuclear"); }
+    public static int developNuclearEcoImpact() { return getEcoImpact("developNuclear"); }
 
     public static int buildMissilesPrice() { return getPrice("buildMissiles"); }
 
-    public static int buildMissilesHarm() { return getHarm("buildMissiles"); }
+    public static int buildMissilesEcoImpact() { return getEcoImpact("buildMissiles"); }
 
     public static int improveEcologyPrice() { return getPrice("improveEcology"); }
+
+    public static int improveEcologyEcoImpact() { return getEcoImpact("improveEcology"); }
 
     public static int shieldCityPrice() { return getPrice("shieldCity"); }
 
     public static int upgradeCityPrice() { return getPrice("upgradeCity"); }
 
+    public static int sendMissileEcoImpact() { return getEcoImpact("sendMissile"); }
+
     private static int getPrice(final String actionName) {
         return Integer.parseInt(properties.getProperty(actionName + "-price"));
     }
 
-    private static int getHarm(final String actionName) {
-        return Integer.parseInt(properties.getProperty(actionName + "-ecologyHarm"));
+    private static int getEcoImpact(final String actionName) {
+        return Integer.parseInt(properties.getProperty(actionName + "-ecologyImpact"));
     }
 }
