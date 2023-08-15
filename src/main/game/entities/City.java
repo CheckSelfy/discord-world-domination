@@ -44,6 +44,6 @@ public class City {
         }
     }
 
-    public void upgrade() { lifeLevel += 10; } // TODO: exact values
+    public void upgrade(int value) { lifeLevel += value; }
 
 }

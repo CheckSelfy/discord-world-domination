@@ -29,7 +29,9 @@ public class Main {
             printStat(game);
             game.acceptOrder(createOrder(new DevelopNuclearAction(green)));
             printStat(game);
-            game.acceptOrder(createOrder(new ShieldCityAction(yellow, 0), new UpgradeCityAction(yellow, 0),
+            game.acceptOrder(createOrder(
+                    new ShieldCityAction(yellow, 0),
+                    new UpgradeCityAction(yellow, 0),
                     new ImproveEcologyAction(yellow)));
             printStat(game);
             game.acceptOrder(createOrder(new BuildMissilesAction(green, 2)));

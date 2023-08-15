@@ -15,7 +15,7 @@ public class UpgradeCityAction extends Action {
     @Override
     public void doAction(Game game) {
         pay();
-        getCountry().getCities()[cityIndex].upgrade();
+        getCountry().getCities()[cityIndex].upgrade(ActionsProps.upgradeCityAmount());
     }
 
     @Override

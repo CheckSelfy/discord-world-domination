@@ -33,6 +33,8 @@ public class ActionsProps {
 
     public static int upgradeCityPrice() { return getPrice("upgradeCity"); }
 
+    public static int upgradeCityAmount() { return getProp("upgradeCity-amount"); }
+
     public static int sendMissilesPrice() { return 0; }
 
     public static int sendMissileEcoImpact() { return getEcoImpact("sendMissile"); }
@@ -41,12 +43,10 @@ public class ActionsProps {
 
     public static int removeSancionsPrice() { return 0; }
 
-    private static int getPrice(final String actionName) {
-        return Integer.parseInt(properties.getProperty(actionName + "-price"));
-    }
+    private static int getPrice(final String actionName) { return getProp(actionName + "-price"); }
 
-    private static int getEcoImpact(final String actionName) {
-        return Integer.parseInt(properties.getProperty(actionName + "-ecologyImpact"));
-    }
+    private static int getEcoImpact(final String actionName) { return getProp(actionName + "-ecologyImpact"); }
+
+    private static int getProp(final String name) { return Integer.parseInt(properties.getProperty(name)); }
 
 }
