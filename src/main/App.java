@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import util.Constants;
 
 public class App extends ListenerAdapter {
-    static CommandSet commands;
+    private static CommandSet commands;
 
     public static void main(String[] args) throws InterruptedException, IOException {
         JDABuilder.create(loadToken(), EnumSet.allOf(GatewayIntent.class)).addEventListeners(new App()).build();

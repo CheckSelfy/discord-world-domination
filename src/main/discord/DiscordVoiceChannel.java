@@ -1,4 +1,4 @@
-package discordentities;
+package discord;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
@@ -7,7 +7,7 @@ import social_logic.io_entities.IUser;
 import social_logic.io_entities.IVoiceChannel;
 
 public class DiscordVoiceChannel implements ITextChannel, IVoiceChannel {
-    private DiscordManager manager;
+    private Session manager;
     private long id;
 
     @Override

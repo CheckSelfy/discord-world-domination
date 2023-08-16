@@ -1,10 +1,10 @@
-package discordentities;
+package discord;
 
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import social_logic.io_entities.ITextChannel;
 
 public class DiscordTextChannel implements ITextChannel {
-    private DiscordManager manager;
+    private Session manager;
     private long id;
 
     @Override

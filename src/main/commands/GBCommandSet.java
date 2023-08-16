@@ -6,6 +6,8 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import phases.CollectorPhase;
 import phases.abstracts.IPhase;
 import util.Constants;
+import discord.DiscordGuild;
+import discord.Session;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.Channel;
@@ -63,6 +65,8 @@ public class GBCommandSet extends CommandSet {
     }
 
     private static void startCommand(SlashCommandInteractionEvent event) {
-        event.getJDA().addEventListener(new CollectorPhase(event));
+        // new session starts here
+        event.getJDA().addEventListener(
+                new Session(event.getJDA(), new DiscordGuild(event.getGuild().getIdLong())));
     }
 }

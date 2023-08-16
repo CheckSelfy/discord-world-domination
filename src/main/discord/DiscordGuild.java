@@ -1,4 +1,4 @@
-package discordentities;
+package discord;
 
 // Guild -> SocialLogic
 public class DiscordGuild {

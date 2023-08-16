@@ -1,4 +1,4 @@
-package discordentities;
+package discord;
 
 import social_logic.io_entities.IUser;
 
