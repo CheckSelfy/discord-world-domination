@@ -1,13 +1,16 @@
 package discord.phases.handlers;
 
 import discord.Session;
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import discord.phases.IPhaseLogic;
 
 public abstract class APhaseEventHandler implements IPhaseEventHandler {
     protected final Session session;
 
-    public APhaseEventHandler(Session session) { this.session = session; }
+    protected final IPhaseLogic logic;
 
-    public abstract void onButtonInteraction(ButtonInteractionEvent event);
+    public APhaseEventHandler(Session session, IPhaseLogic logic) {
+        this.session = session;
+        this.logic = logic;
+    }
 
 }

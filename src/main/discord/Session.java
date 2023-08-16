@@ -26,6 +26,8 @@ public class Session extends ListenerAdapter {
 
     public DiscordGuild getDiscordGuild() { return guild; }
 
+    public long getGuildId() { return guild.getId(); }
+
     public net.dv8tion.jda.api.entities.Guild getGuild() { return jda.getGuildById(guild.getId()); }
 
     @Override
