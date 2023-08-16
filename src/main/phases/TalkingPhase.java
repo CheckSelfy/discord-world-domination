@@ -6,8 +6,8 @@ import java.util.StringJoiner;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import discordentities.DiscordTeam;
-import discordentities.checkers.MessageWithPrivilegeUserChecker;
+import discord.DiscordTeam;
+import discord.checkers.MessageWithPrivilegeUserChecker;
 import game.entities.Member;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;

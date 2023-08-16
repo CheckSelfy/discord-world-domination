@@ -41,6 +41,17 @@ public class Team extends Country {
 
     public IUser getPresident() { return president; }
 
+    public void setPresident(long id) {
+        for (IUser user : members) {
+            if (user.getUserId() == id) {
+                president = user;
+                return;
+            }
+        }
+
+        throw new RuntimeException("[setPresident] No user with id: " + id + " found");
+    }
+
     public CombinedChannel getChannel() { return channel; }
 
     public CountryDescription getDescription() { return description; }

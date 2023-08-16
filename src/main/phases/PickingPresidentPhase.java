@@ -9,8 +9,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import discordentities.DiscordTeam;
-import discordentities.checkers.MessageWithPrivilegeUserChecker;
+import discord.DiscordTeam;
+import discord.checkers.MessageWithPrivilegeUserChecker;
 import game.entities.Member;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
@@ -189,6 +189,8 @@ public class PickingPresidentPhase extends APhase {
                         isAllTrue &= readinness.get(i).get();
                     }
                     if (isAllTrue) {
+                        // SocialLogic
+                        // - Game
                         changeToNextPhase();
                     }
                     return null;
@@ -196,7 +198,5 @@ public class PickingPresidentPhase extends APhase {
     }
 
     @Override
-    public IPhase nextPhase() {
-        return new TalkingPhase(getJDA(), teams);
-    }
+    public IPhase nextPhase() { return new TalkingPhase(getJDA(), teams); }
 }

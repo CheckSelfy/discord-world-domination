@@ -8,4 +8,6 @@ public interface IVoiceChannel {
             moveUser(user);
         }
     }
+
+    public long getChannelId();
 }

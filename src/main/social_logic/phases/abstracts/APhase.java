@@ -1,11 +1,9 @@
 package social_logic.phases.abstracts;
 
-public abstract class APhase implements IPhase{
+public abstract class APhase implements IPhase {
     int round;
 
-    public APhase(int round) {
-        this.round = round;
-    }
+    public APhase(int round) { this.round = round; }
 
-	public int getRound() { return round; }
+    public int getRound() { return round; }
 }

@@ -3,7 +3,6 @@ package commands;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import phases.CollectorPhase;
 import phases.abstracts.IPhase;
 import util.Constants;
 import discord.DiscordGuild;

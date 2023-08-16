@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import discordentities.checkers.MessageWithPrivilegeUserChecker;
+import discord.checkers.MessageWithPrivilegeUserChecker;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -46,7 +46,7 @@ public class CollectorPhase extends PhaseWithTimer {
                     message = new MessageWithPrivilegeUserChecker(msg, event.getUser().getIdLong());
                     return GameUtil.putCountriesEmoji(msg);
                 }).queue();
-        
+
         schedule(this::timerEndedMethod);
     }
 
@@ -138,9 +138,7 @@ public class CollectorPhase extends PhaseWithTimer {
     }
 
     @Override
-    public IPhase nextPhase() {
-        return new PickingPresidentPhase(getJDA(), teams, message);
-    }
+    public IPhase nextPhase() { return new PickingPresidentPhase(getJDA(), teams, message); }
 
     @Override
     public void onMessageDelete(MessageDeleteEvent e) {
@@ -154,7 +152,7 @@ public class CollectorPhase extends PhaseWithTimer {
         return Integer.parseInt(Constants.properties.getProperty("collectorPhaseDurationInSeconds"));
     }
 
-    public void timerEndedMethod() { 
+    public void timerEndedMethod() {
         getJDA().getTextChannelById(message.getChannelId()).deleteMessageById(message.getMessageId()).queue();
     }
 }
