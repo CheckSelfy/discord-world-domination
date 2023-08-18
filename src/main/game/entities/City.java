@@ -44,4 +44,6 @@ public class City {
         }
     }
 
+    public void upgrade(int value) { lifeLevel += value; }
+
 }

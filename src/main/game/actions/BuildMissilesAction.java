@@ -1,8 +1,8 @@
-package game.orders;
+package game.actions;
 
 import game.Game;
+import game.Order.Action;
 import game.entities.Country;
-import game.orders.Order.Action;
 
 public class BuildMissilesAction extends Action {
     private final int count;
@@ -14,12 +14,13 @@ public class BuildMissilesAction extends Action {
 
     @Override
     public void doAction(Game game) {
-        getCountry().pay(price());
+        game.impactEcology(ActionsProps.buildMissilesEcoImpact() * count);
+        pay();
         getCountry().addMissiles(count);
     }
 
     @Override
-    public int price() { return count * 150; }
+    public int price() { return ActionsProps.buildMissilesPrice() * count; }
 
     @Override
     public boolean requreNuclear() { return true; }

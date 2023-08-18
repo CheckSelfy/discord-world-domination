@@ -1,9 +1,9 @@
-package game.orders;
+package game.actions;
 
 import game.Game;
+import game.Order.Action;
 import game.entities.City;
 import game.entities.Country;
-import game.orders.Order.Action;
 
 public class SendMissileAction extends Action {
     private final City city;
@@ -15,12 +15,13 @@ public class SendMissileAction extends Action {
 
     @Override
     public void doAction(Game game) {
+        game.impactEcology(ActionsProps.sendMissileEcoImpact());
         getCountry().removeMissile();
         city.acceptMissile();
     }
 
     @Override
-    public int price() { return 0; }
+    public int price() { return ActionsProps.sendMissilesPrice(); }
 
     @Override
     public boolean missileRequired() { return true; }
