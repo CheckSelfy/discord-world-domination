@@ -34,12 +34,12 @@ public class DiscordIODevice extends ListenerAdapter implements IODevice<Discord
     @Override
     public void close() { jda.removeEventListener(this); }
 
+    public JDA getJDA() { return jda; }
+
     private void guard() {
         if (session == null) {
             throw new NullPointerException("Session is not set, but event recieved");
         }
     }
-
-    public JDA getJDA() { return jda; }
 
 }
