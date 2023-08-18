@@ -5,54 +5,40 @@ import java.util.Set;
 import game.entities.City;
 import game.entities.Country;
 import languages.CountryDescription;
-import social_logic.io_entities.CombinedChannel;
-import social_logic.io_entities.IUser;
 
 public class Team extends Country {
-    private Set<IUser> members;
-    private IUser president;
-    private CombinedChannel channel;
-    private CountryDescription description;
+    private final Set<IMember> members;
+    private final IMember president;
+    private final CountryDescription description;
 
-    // TODO: STUB. Change or check it please.
-    private static City[] createCities(CountryDescription localization) {
-        City[] result = new City[4];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = new City(localization.getCityNames()[i], (i + 14) * 10);
-        }
-        return result;
-    }
-
-    public Team(Set<IUser> members, IUser president, CountryDescription description, CombinedChannel channel) {
-        super(description.getName(), createCities(description));
+    public Team(Set<IMember> members, IMember president, CountryDescription description) {
+        super(description.getName(), CreateCities.createCities(description)); // ?
 
         assert (!members.isEmpty());
         assert (members.contains(president));
 
         this.members = members;
         this.president = president;
-        this.channel = channel;
         this.description = description;
     }
 
-    public boolean isMemberOfTeam(IUser user) { return members.contains(user); }
+    // TODO: remove if unused
+    public boolean isMemberOfTeam(IMember user) { return members.contains(user); }
 
-    public Set<IUser> getMembers() { return members; }
+    public Set<IMember> getMembers() { return members; }
 
-    public IUser getPresident() { return president; }
-
-    public void setPresident(long id) {
-        for (IUser user : members) {
-            if (user.getUserId() == id) {
-                president = user;
-                return;
-            }
-        }
-
-        throw new RuntimeException("[setPresident] No user with id: " + id + " found");
-    }
-
-    public CombinedChannel getChannel() { return channel; }
+    public IMember getPresident() { return president; }
 
     public CountryDescription getDescription() { return description; }
+}
+
+// TODO: STUB. Change or check it please.
+class CreateCities {
+    public static City[] createCities(CountryDescription localization) {
+        City[] result = new City[4];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = new City(localization.getCityNames()[i], (i + 14) * 10);
+        }
+        return result;
+    }
 }

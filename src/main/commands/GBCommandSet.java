@@ -4,13 +4,16 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import phases.abstracts.IPhase;
+import social_logic.Session;
 import util.Constants;
-import discord.DiscordGuild;
-import discord.Session;
+import discord.DiscordIODevice;
+import discord.phases.CollectorPhaseHandler;
+import discord.phases.IDiscordPhaseEventHandler;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import app.App;
 
 public class GBCommandSet extends CommandSet {
     public GBCommandSet() {
@@ -64,8 +67,12 @@ public class GBCommandSet extends CommandSet {
     }
 
     private static void startCommand(SlashCommandInteractionEvent event) {
-        // new session starts here
-        event.getJDA().addEventListener(
-                new Session(event.getJDA(), new DiscordGuild(event.getGuild().getIdLong())));
+        DiscordIODevice ioDevice = new DiscordIODevice(event.getJDA(), event.getGuild().getIdLong());
+        Session<DiscordIODevice, IDiscordPhaseEventHandler> session = new Session<>(ioDevice);
+        session.setPhase(new CollectorPhaseHandler(session));
+        ioDevice.setSession(session);
+        App.addNewSession(session);
+        event.getJDA().addEventListener(ioDevice);
     }
+
 }
