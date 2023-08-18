@@ -9,6 +9,7 @@ import social_logic.Session;
 import social_logic.entities.TeamBuilder;
 import social_logic.phases.handlers_interfaces.IPresidentPickingPhaseEventHandler;
 
+// TODO: make PresidentPickingPhase
 public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         implements IPresidentPickingPhaseEventHandler {
     private final ArrayList<TeamBuilder> builders;

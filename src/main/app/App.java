@@ -19,7 +19,7 @@ import util.Constants;
 
 public class App extends ListenerAdapter {
     private static CommandSet commands;
-    private static ArrayList<Session<DiscordIODevice, IDiscordPhaseEventHandler>> session;
+    private static ArrayList<Session<DiscordIODevice, IDiscordPhaseEventHandler>> session = new ArrayList<>();
 
     public static void main(String[] args) throws InterruptedException, IOException {
         JDABuilder.create(loadToken(), EnumSet.allOf(GatewayIntent.class)).addEventListeners(new App()).build();
