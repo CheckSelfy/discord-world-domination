@@ -1,8 +1,8 @@
-package game.orders;
+package game.actions;
 
 import game.Game;
+import game.Order.Action;
 import game.entities.Country;
-import game.orders.Order.Action;
 
 public class TransferMoneyAction extends Action {
     private final Country transferTo;
