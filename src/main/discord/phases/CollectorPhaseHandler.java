@@ -36,9 +36,11 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
     private long pollMessageId;
     private long pollCreatorId;
 
-    public CollectorPhaseHandler(Session<DiscordIODevice, IDiscordPhaseEventHandler> session, long pollChannelId,
+    public CollectorPhaseHandler(Session<DiscordIODevice, IDiscordPhaseEventHandler> session,
+            long pollChannelId,
             long pollCreatorId) {
         super(session);
+
         teams = new ArrayList<>(Constants.COUNTRIES_COUNT);
         for (int i = 0; i < Constants.COUNTRIES_COUNT; i++) {
             teams.add(new HashSet<>());
@@ -46,11 +48,10 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
 
         this.pollChannelId = pollChannelId;
         this.pollCreatorId = pollCreatorId;
-
-        getJDA().getTextChannelById(pollChannelId)
+        this.pollMessageId = getJDA().getTextChannelById(pollChannelId)
                 .sendMessage(getCreateMessageData())
                 .flatMap(msg -> GameUtil.putCountriesEmoji(msg))
-                .queue(msg -> this.pollMessageId = msg.getIdLong());
+                .complete().getIdLong();
 
         phaseLogic = new CollectorPhaseLogic(this);
     }
@@ -80,7 +81,6 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
 
         MessageEditData changes = new MessageEditBuilder().setComponents().setEmbeds(buildEmbedWithUsers(false))
                 .build();
-
         event.getHook().editMessageById(pollMessageId, changes).flatMap(msg -> msg.clearReactions())
                 .queue();
 
@@ -105,10 +105,13 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
         for (int i = 0; i < Constants.COUNTRIES_COUNT; i++) {
             StringJoiner joiner = new StringJoiner(", ");
             for (Long user : teams.get(i))
-                joiner.add(DiscordUtil.getDiscordMentionTag(user));
+                if (getJDA().getSelfUser().getIdLong() != user) {
+                    joiner.add(DiscordUtil.getDiscordMentionTag(user));
+                }
 
-            if (addEmptyFields || joiner.length() != 0)
+            if (addEmptyFields || joiner.length() != 0) {
                 builder.addField(Constants.teamNames.get(i).getFullName(), joiner.toString(), false);
+            }
         }
 
         return builder.build();
@@ -116,14 +119,20 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
 
     @Override
     public void onGenericMessageReaction(GenericMessageReactionEvent event) {
-        int team = getTeamByEmoji(event.getEmoji());
-        if (team == -1)
+        if (event.getChannel().getIdLong() != pollChannelId || event.getMessageIdLong() != pollMessageId) {
             return;
+        }
 
-        if (event instanceof MessageReactionAddEvent)
+        int team = getTeamByEmoji(event.getEmoji());
+        if (team == -1) {
+            return;
+        }
+
+        if (event instanceof MessageReactionAddEvent) {
             teams.get(team).add(event.getUserIdLong());
-        else
+        } else {
             teams.get(team).remove(event.getUserIdLong());
+        }
 
         updateMessage();
     }

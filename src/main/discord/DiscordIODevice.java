@@ -3,6 +3,7 @@ package discord;
 import discord.phases.IDiscordPhaseEventHandler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import social_logic.IODevice;
 import social_logic.Session;
@@ -10,7 +11,6 @@ import social_logic.Session;
 public class DiscordIODevice extends ListenerAdapter implements IODevice<DiscordIODevice, IDiscordPhaseEventHandler> {
     private Session<DiscordIODevice, IDiscordPhaseEventHandler> session;
     private final long guildId;
-
     private final JDA jda;
 
     public DiscordIODevice(final JDA jda, final long guildId) {
@@ -29,6 +29,16 @@ public class DiscordIODevice extends ListenerAdapter implements IODevice<Discord
             return;
         }
         session.getPhase().onButtonInteraction(event);
+    }
+
+    @Override
+    public void onGenericMessageReaction(GenericMessageReactionEvent event) {
+        guard();
+
+        if (event.getGuild().getIdLong() != guildId) {
+            return;
+        }
+        session.getPhase().onGenericMessageReaction(event);
     }
 
     @Override

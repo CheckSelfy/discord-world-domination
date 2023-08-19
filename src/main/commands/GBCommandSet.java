@@ -24,6 +24,7 @@ public class GBCommandSet extends CommandSet {
     private static void startCommand(SlashCommandInteractionEvent event) {
         DiscordIODevice ioDevice = new DiscordIODevice(event.getJDA(), event.getGuild().getIdLong());
         Session<DiscordIODevice, IDiscordPhaseEventHandler> session = new Session<>(ioDevice);
+        event.reply("Game created!").queue();
         session.setPhase(
                 new CollectorPhaseHandler(session, event.getChannel().getIdLong(), event.getUser().getIdLong()));
         ioDevice.setSession(session);
