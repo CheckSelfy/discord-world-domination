@@ -45,4 +45,12 @@ public class App extends ListenerAdapter {
 
     public static void removeSession(final Session<DiscordIODevice, IDiscordPhaseEventHandler> s) { session.remove(s); }
 
+    public static boolean haveRunningSessionInGuild(long guildId) {
+        for (Session<DiscordIODevice, IDiscordPhaseEventHandler> s: session) {
+            if (s.getIODevice().getGuildId() == guildId) {
+                return true;
+            }
+        }
+        return false;
+    }   
 }

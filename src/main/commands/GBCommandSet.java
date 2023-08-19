@@ -22,6 +22,11 @@ public class GBCommandSet extends CommandSet {
     }
 
     private static void startCommand(SlashCommandInteractionEvent event) {
+        if (App.haveRunningSessionInGuild(event.getGuild().getIdLong())) {
+            event.reply("Game have been already created!").setEphemeral(true).queue();
+            return;
+        }
+
         DiscordIODevice ioDevice = new DiscordIODevice(event.getJDA(), event.getGuild().getIdLong());
         Session<DiscordIODevice, IDiscordPhaseEventHandler> session = new Session<>(ioDevice);
         event.reply("Game created!").queue();

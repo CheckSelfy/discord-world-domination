@@ -18,6 +18,10 @@ public class DiscordIODevice extends ListenerAdapter implements IODevice<Discord
         this.guildId = guildId;
     }
 
+    public long getGuildId() {
+        return guildId;
+    }
+
     @Override
     public void setSession(Session<DiscordIODevice, IDiscordPhaseEventHandler> session) { this.session = session; }
 
