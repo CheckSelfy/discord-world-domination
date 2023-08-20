@@ -9,14 +9,20 @@ import discord.entities.DiscordTeamProperty;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu.Builder;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.requests.restaction.RoleAction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import social_logic.Session;
 import social_logic.entities.IMember;
 import social_logic.entities.TeamBuilder;
@@ -41,10 +47,29 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         }
 
         createChannelsAndRoles().complete();
+        sendPolls().complete();
+    }
 
-        for (DiscordTeamProperty pr: properties) {
-            System.out.format("roleId: %d, channelId: %d\n", pr.roleID(), pr.voiceChatID());
+    static String pickPresident = "votePresident";
+
+    private RestAction<?> sendPolls() { 
+        List<MessageCreateAction> actions = new ArrayList<>(phaseLogic.getTeamCount());
+        for (int i = 0; i < phaseLogic.getTeamCount(); i++) {
+            Set<IMember> members = phaseLogic.getTeamBuilder(i).getMembers();
+            Builder menuBuilder = StringSelectMenu.create(pickPresident + i); // id of interaction
+            for (IMember m: members) {
+                User user = getJDA().getUserById(m.getID());
+                menuBuilder.addOption(user.getName(), user.getId()); // TODO Change field value.
+            }
+            
+            MessageCreateData message = new MessageCreateBuilder()
+                .setContent("Pick your president!")
+                .addActionRow(menuBuilder.build()).build();
+
+            MessageCreateAction sendMessage = getJDA().getVoiceChannelById(properties.get(i).voiceChatID()).sendMessage(message);
+            actions.add(sendMessage);
         }
+        return RestAction.allOf(actions);
     }
 
     private RestAction<?> createChannelsAndRoles() {
