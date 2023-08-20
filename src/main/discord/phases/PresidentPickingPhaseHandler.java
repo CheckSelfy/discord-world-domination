@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import discord.DiscordIODevice;
+import discord.entities.DiscordTeamProperty;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -27,33 +28,45 @@ import util.Constants;
 public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         implements IPresidentPickingPhaseEventHandler {
     private final PresidentPickingPhaseLogic phaseLogic;
+    private final ArrayList<DiscordTeamProperty> properties;
 
     public PresidentPickingPhaseHandler(Session<DiscordIODevice, IDiscordPhaseEventHandler> session,
             ArrayList<TeamBuilder> builders) {
         super(session);
 
         this.phaseLogic = new PresidentPickingPhaseLogic(this, builders);
+        this.properties = new ArrayList<>(builders.size());
+        for (int i = 0; i < builders.size(); i++) {
+            properties.add(null);
+        }
 
-        createChannelsAndRoles();
+        createChannelsAndRoles().complete();
+
+        for (DiscordTeamProperty pr: properties) {
+            System.out.format("roleId: %d, channelId: %d\n", pr.roleID(), pr.voiceChatID());
+        }
     }
 
-    private void createChannelsAndRoles() {
+    private RestAction<?> createChannelsAndRoles() {
         Guild guild = getJDA().getGuildById(session.getIODevice().getGuildId());
-        guild.createCategory(Constants.bundle.getString("game_name")).and(
-                createRoles(guild),
-                (Category category, List<Role> roles) -> {
-                    List<RestAction<?>> actions = new ArrayList<>(2 * roles.size());
+        Category category = guild.createCategory(Constants.bundle.getString("game_name")).complete();
+        List<Role> roles = createRoles(guild).complete();
 
-                    for (int i = 0; i < phaseLogic.getTeamCount(); i++) {
-                        Role role = roles.get(i);
-                        TeamBuilder builder = phaseLogic.getTeamBuilder(i);
-                        RestAction<List<Void>> givingToUser = addMembersToRole(role, builder.getMembers());
-                        ChannelAction<VoiceChannel> createVoice = createVoiceTeamChannel(category, role, builder.getDescription().getName());
-                        actions.add(givingToUser);
-                        actions.add(createVoice);
-                    }
-                    return RestAction.allOf(actions);
-                }).flatMap(a -> a).queue(); // oh my god, can you help me to fix this stupid looking code...
+        List<RestAction<?>> actions = new ArrayList<>(phaseLogic.getTeamCount());
+
+        for (int i = 0; i < phaseLogic.getTeamCount(); i++) {
+            Role role = roles.get(i);
+            final int index = i;                    // │ TODO
+            final long roleId = role.getIdLong();   // └───────> how to get rid of these ones?
+            TeamBuilder builder = phaseLogic.getTeamBuilder(i);
+            RestAction<List<Void>> addMembersToRole = addMembersToRole(role, builder.getMembers());
+            RestAction<VoiceChannel> createVC = createVoiceTeamChannel(category, role, builder.getDescription().getName())
+                .onSuccess(vc -> properties.set(index, new DiscordTeamProperty(vc.getIdLong(), roleId)));
+            actions.add(addMembersToRole);
+            actions.add(createVC);
+        }
+
+        return RestAction.allOf(actions);
     }
 
     private RestAction<List<Role>> createRoles(Guild guild) {
