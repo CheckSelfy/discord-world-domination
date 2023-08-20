@@ -123,6 +123,10 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
             return;
         }
 
+        if (event.getUser().isBot()) {
+            return;
+        }
+
         int team = getTeamByEmoji(event.getEmoji());
         if (team == -1) {
             return;
