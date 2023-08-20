@@ -16,19 +16,23 @@ public class CollectorPhaseLogic {
 
     public CollectorPhaseLogic(ICollectorPhaseEventHandler handler) {
         this.handler = handler;
-        this.builders = new ArrayList<>(Constants.COUNTRIES_COUNT);
-        for (int i = 0; i < Constants.COUNTRIES_COUNT; i++) {
-            builders.add(new TeamBuilder());
-        }
+        this.builders = new ArrayList<>();
+        // for (int i = 0; i < Constants.COUNTRIES_COUNT; i++) {
+        //     builders.add(new TeamBuilder());
+        // }
     }
 
     public void collectMembers(ArrayList<Set<IMember>> members) {
-        for (int i = 0; i < Constants.COUNTRIES_COUNT; i++) {
-            builders.get(i)
-                    .setMembers(members.get(i))
-                    .setDescription(Constants.teamNames.get(i));
-        }
-        handler.nextPhase(builders);
+        assert (members.size() == Constants.COUNTRIES_COUNT);
 
+        for (int i = 0; i < Constants.COUNTRIES_COUNT; i++) {
+            if (!members.get(i).isEmpty()) {
+                this.builders.add(new TeamBuilder()
+                    .setMembers(members.get(i))
+                    .setDescription(Constants.teamNames.get(i)));
+            }
+        }
+
+        handler.nextPhase(builders);
     }
 }
