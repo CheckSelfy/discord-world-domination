@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import discord.DiscordIODevice;
 import discord.entities.DiscordTeam;
 import game.Game;
@@ -19,6 +18,7 @@ import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import social_logic.Session;
 import social_logic.phases.handlers_interfaces.ITalkingPhaseEventHandler;
 import social_logic.phases.logic.TalkingPhaseLogic;
@@ -29,22 +29,26 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
 
     private final TalkingPhaseLogic<DiscordTeam> logic;
     private final Map<Long, DiscordTeam> channelToTeam;
+    private final Map<DiscordTeam, Boolean> requestSend;
+    private final Map<DiscordTeam, Long> teamToMessageID;
 
     public TalkingPhaseHandler(Session<DiscordIODevice, IDiscordPhaseEventHandler> session, Game<DiscordTeam> game) {
         super(session);
         logic = new TalkingPhaseLogic<>(this, game);
         channelToTeam = new HashMap<>(logic.getTeams().size());
+        requestSend = new HashMap<>(logic.getTeams().size());
+        teamToMessageID = new HashMap<>(logic.getTeams().size());
+
         for (DiscordTeam team : logic.getTeams()) {
             channelToTeam.put(team.getProperty().voiceChatID(), team);
         }
 
         // UI
-        sendPolls(game.getCountries()).complete();
+        sendPolls(logic.getTeams()).complete();
     }
 
-    // TODO: add single choise
     private RestAction<?> sendPolls(List<DiscordTeam> teams) {
-        List<MessageCreateAction> actions = new ArrayList<>(teams.size());
+        List<RestAction<?>> actions = new ArrayList<>(teams.size());
         for (int i = 0; i < teams.size(); i++) {
             Builder menuBuilder = StringSelectMenu.create(delegationReq + i);
             for (int j = 0; j < teams.size(); j++) {
@@ -59,14 +63,17 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
                     .setContent("Select to which country to send a delegation")
                     .addActionRow(menuBuilder.build()).build();
 
+            final DiscordTeam team = teams.get(i);
             MessageCreateAction sendMessage = getJDA()
                     .getVoiceChannelById(teams.get(i).getProperty().voiceChatID())
                     .sendMessage(message);
-            actions.add(sendMessage);
+            actions.add(sendMessage.onSuccess(msg -> teamToMessageID.put(team, msg.getIdLong())));
+
         }
         return RestAction.allOf(actions);
     }
 
+    // TODO: accept and deny buttons
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
         //
@@ -83,10 +90,21 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
             return;
         }
 
-        int recipientTeamId = Integer.parseInt(event.getValues().get(0));
-        getJDA().getVoiceChannelById(logic.getTeams().get(recipientTeamId).getProperty().voiceChatID())
-                .sendMessage(createAcceptDelegationMessage(senderTeam.getDescription().getFullName())).queue();
-        event.getHook().sendMessage("Invite send").setEphemeral(true).queue();
+        if (requestSend.getOrDefault(senderTeam, false)) {
+            event.getHook().sendMessage("You can send only one request per round").setEphemeral(true).queue();
+            return;
+        }
+
+        DiscordTeam recipientTeam = logic.getTeams().get(Integer.parseInt(event.getValues().get(0)));
+        getJDA().getVoiceChannelById(recipientTeam.getProperty().voiceChatID())
+                .sendMessage(createAcceptDelegationMessage(senderTeam.getDescription().getFullName())).complete();
+        requestSend.put(senderTeam, true);
+
+        event.getHook().editMessageById(teamToMessageID.get(senderTeam),
+                new MessageEditBuilder()
+                        .setContent("You send request to: " + recipientTeam.getDescription().getFullName()).build())
+                .setReplace(true)
+                .queue();
     }
 
     private static final Button acceptDelegation = Button.of(ButtonStyle.SUCCESS, "accept_delegation", "Accept");

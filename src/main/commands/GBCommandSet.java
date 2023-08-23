@@ -119,8 +119,10 @@ public class GBCommandSet extends CommandSet {
     private static final List<DiscordTeamBuilder> builders = List.of(
             new DiscordTeamBuilder().setMembers(Set.of(ismaxis, checkselfy)).setPresident(ismaxis)
                     .setDescription(Constants.teamNames.get(0)),
-            new DiscordTeamBuilder().setMembers(Set.of(checkself, maksobot)).setPresident(maksobot)
-                    .setDescription(Constants.teamNames.get(1)));
+            new DiscordTeamBuilder().setMembers(Set.of(maksobot)).setPresident(maksobot)
+                    .setDescription(Constants.teamNames.get(1)),
+            new DiscordTeamBuilder().setMembers(Set.of(checkself)).setPresident(checkself)
+                    .setDescription(Constants.teamNames.get(2)));
 
     private static void skipCollectorAndPickingPhase(SlashCommandInteractionEvent event) {
         event.deferReply().complete();
