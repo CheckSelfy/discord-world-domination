@@ -9,4 +9,22 @@ public class DiscordMember implements IMember {
 
     @Override
     public long getID() { return userId; }
+
+    @Override
+    public int hashCode() { return (int) getID(); }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        } else if (obj == null) {
+            return false;
+        } else if (obj instanceof DiscordMember other) {
+            if (getID() == other.getID()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

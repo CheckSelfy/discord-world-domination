@@ -3,6 +3,7 @@ package discord;
 import discord.phases.IDiscordPhaseEventHandler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import social_logic.IODevice;
@@ -18,9 +19,7 @@ public class DiscordIODevice extends ListenerAdapter implements IODevice<Discord
         this.guildId = guildId;
     }
 
-    public long getGuildId() {
-        return guildId;
-    }
+    public long getGuildId() { return guildId; }
 
     @Override
     public void setSession(Session<DiscordIODevice, IDiscordPhaseEventHandler> session) { this.session = session; }
@@ -28,7 +27,6 @@ public class DiscordIODevice extends ListenerAdapter implements IODevice<Discord
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
         guard();
-
         if (event.getGuild().getIdLong() != guildId) {
             return;
         }
@@ -38,11 +36,19 @@ public class DiscordIODevice extends ListenerAdapter implements IODevice<Discord
     @Override
     public void onGenericMessageReaction(GenericMessageReactionEvent event) {
         guard();
-
         if (event.getGuild().getIdLong() != guildId) {
             return;
         }
         session.getPhase().onGenericMessageReaction(event);
+    }
+
+    @Override
+    public void onStringSelectInteraction(StringSelectInteractionEvent event) {
+        guard();
+        if (event.getGuild().getIdLong() != guildId) {
+            return;
+        }
+        session.getPhase().onStringSelectInteraction(event);
     }
 
     @Override

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import discord.DiscordIODevice;
+import discord.entities.DiscordMember;
 import discord.entities.DiscordTeamProperty;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -13,7 +14,9 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu.Builder;
 import net.dv8tion.jda.api.requests.RestAction;
@@ -30,7 +33,6 @@ import social_logic.phases.handlers_interfaces.IPresidentPickingPhaseEventHandle
 import social_logic.phases.logic.PresidentPickingPhaseLogic;
 import util.Constants;
 
-// TODO: make PresidentPickingPhase
 public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         implements IPresidentPickingPhaseEventHandler {
     private final PresidentPickingPhaseLogic phaseLogic;
@@ -50,23 +52,27 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         sendPolls().complete();
     }
 
-    static String pickPresident = "votePresident";
+    private static final String pickPresident = "votePresident";
 
-    private RestAction<?> sendPolls() { 
+    private RestAction<?> sendPolls() {
         List<MessageCreateAction> actions = new ArrayList<>(phaseLogic.getTeamCount());
         for (int i = 0; i < phaseLogic.getTeamCount(); i++) {
             Set<IMember> members = phaseLogic.getTeamBuilder(i).getMembers();
             Builder menuBuilder = StringSelectMenu.create(pickPresident + i); // id of interaction
-            for (IMember m: members) {
+            for (IMember m : members) {
                 User user = getJDA().getUserById(m.getID());
-                menuBuilder.addOption(user.getName(), user.getId()); // TODO Change field value.
+                menuBuilder.addOption(user.getName(), user.getId());
             }
-            
-            MessageCreateData message = new MessageCreateBuilder()
-                .setContent("Pick your president!")
-                .addActionRow(menuBuilder.build()).build();
 
-            MessageCreateAction sendMessage = getJDA().getVoiceChannelById(properties.get(i).voiceChatID()).sendMessage(message);
+            MessageCreateData message = new MessageCreateBuilder()
+                    .setContent("Pick your president!")
+                    .addActionRow(menuBuilder.build())
+                    // TODO: remove debug button
+                    .addActionRow(Button.of(ButtonStyle.PRIMARY, "proceedVotes" + i, "[DEBUG] Proceed votes"))
+                    .build();
+
+            MessageCreateAction sendMessage = getJDA().getVoiceChannelById(properties.get(i).voiceChatID())
+                    .sendMessage(message);
             actions.add(sendMessage);
         }
         return RestAction.allOf(actions);
@@ -81,12 +87,13 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
 
         for (int i = 0; i < phaseLogic.getTeamCount(); i++) {
             Role role = roles.get(i);
-            final int index = i;                    // │ TODO
-            final long roleId = role.getIdLong();   // └───────> how to get rid of these ones?
+            final int index = i; // ................ │ TODO
+            final long roleId = role.getIdLong(); // └───────> how to get rid of these ones?
             TeamBuilder builder = phaseLogic.getTeamBuilder(i);
             RestAction<List<Void>> addMembersToRole = addMembersToRole(role, builder.getMembers());
-            RestAction<VoiceChannel> createVC = createVoiceTeamChannel(category, role, builder.getDescription().getName())
-                .onSuccess(vc -> properties.set(index, new DiscordTeamProperty(vc.getIdLong(), roleId)));
+            RestAction<VoiceChannel> createVC = createVoiceTeamChannel(category, role,
+                    builder.getDescription().getName())
+                            .onSuccess(vc -> properties.set(index, new DiscordTeamProperty(vc.getIdLong(), roleId)));
             actions.add(addMembersToRole);
             actions.add(createVC);
         }
@@ -132,15 +139,35 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
                         0);
     }
 
-    public void nextPhase() { /* session.setPhase(new TalkingPhase(session)); */ }
-
     @Override
-    public void onButtonInteraction(ButtonInteractionEvent event) { // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onButtonInteraction'");
+    public void onStringSelectInteraction(StringSelectInteractionEvent event) {
+        long voter = event.getUser().getIdLong();
+        long voted = Long.parseLong(event.getValues().get(0));
+        phaseLogic.vote(new DiscordMember(voter), new DiscordMember(voted));
+        event.deferEdit().queue();
+        System.out.println("[" + voter + "] -> " + "[" + voted + "]");
     }
 
+    // TODO: remove debug button
     @Override
-    public void onGenericMessageReaction(GenericMessageReactionEvent event) { // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onGenericMessageReaction'");
+    public void onButtonInteraction(ButtonInteractionEvent event) {
+        event.deferEdit().queue();
+
+        phaseLogic.proceedVotes();
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < phaseLogic.getTeamCount(); i++) {
+            TeamBuilder t = phaseLogic.getTeamBuilder(i);
+            sb.append(getJDA().getUserById(t.getPresident().getID()).getName()).append("\n");
+        }
+
+        event.getChannel().asVoiceChannel().sendMessage(sb.toString()).queue();
+        System.out.println("Votes proceeded");
     }
+
+    public void nextPhase() {
+        System.out.println("Next phase");
+        /* session.setPhase(new TalkingPhase(session)); */
+    }
+
 }
