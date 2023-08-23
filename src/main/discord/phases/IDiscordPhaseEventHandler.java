@@ -6,12 +6,14 @@ import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import social_logic.phases.handlers_interfaces.IPhaseEventHandler;
 
 public interface IDiscordPhaseEventHandler extends IPhaseEventHandler {
+    public void phaseEnding();
+    public int getDurationInMilliseconds();
+
     static final String DEBUG_DEFAULT_REPLY = "[DEBUG] Default reply";
 
-    default void onButtonInteraction(ButtonInteractionEvent event) { event.reply(DEBUG_DEFAULT_REPLY); }
+    public default void onButtonInteraction(ButtonInteractionEvent event) { event.reply(DEBUG_DEFAULT_REPLY).queue(); }
 
-    default void onGenericMessageReaction(GenericMessageReactionEvent event) {};
+    public default void onGenericMessageReaction(GenericMessageReactionEvent event) {};
 
-    default void onStringSelectInteraction(StringSelectInteractionEvent event) { event.reply(DEBUG_DEFAULT_REPLY); };
-
+    public default void onStringSelectInteraction(StringSelectInteractionEvent event) { event.reply(DEBUG_DEFAULT_REPLY); };
 }

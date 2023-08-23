@@ -87,8 +87,8 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
 
         for (int i = 0; i < phaseLogic.getTeamCount(); i++) {
             Role role = roles.get(i);
-            final int index = i; // ................ │ TODO
-            final long roleId = role.getIdLong(); // └───────> how to get rid of these ones?
+            final int index = i; 
+            final long roleId = role.getIdLong(); 
             TeamBuilder builder = phaseLogic.getTeamBuilder(i);
             RestAction<List<Void>> addMembersToRole = addMembersToRole(role, builder.getMembers());
             RestAction<VoiceChannel> createVC = createVoiceTeamChannel(category, role,
@@ -148,6 +148,14 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         System.out.println("[" + voter + "] -> " + "[" + voted + "]");
     }
 
+    public void phaseEnding() { // TODO Auto-generated method stub
+        // summing up votes.
+        // ...
+        // nextPhase();
+        System.out.println("Ended pres-picking.");
+        throw new UnsupportedOperationException("Unimplemented method 'phaseEnding'");
+    }
+
     // TODO: remove debug button
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
@@ -169,5 +177,8 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         System.out.println("Next phase");
         /* session.setPhase(new TalkingPhase(session)); */
     }
+
+    public int getDurationInMilliseconds() { // TODO Auto-generated method stub
+    return 0; }
 
 }

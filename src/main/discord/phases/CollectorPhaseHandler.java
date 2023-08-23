@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import app.App;
 import discord.DiscordIODevice;
 import discord.entities.DiscordMember;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -59,12 +61,15 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
                 .complete().getIdLong();
 
         phaseLogic = new CollectorPhaseLogic(this);
+        System.out.println("Started");
+
+        scheduleEnd();
+        scheduleBeforeEnd(() -> System.out.println("5 seconds to go!"), 5_000); // TODO: Example. Remove it 
     }
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
-        if (event.getChannel().getIdLong() != pollChannelId ||
-                event.getMessage().getIdLong() != pollMessageId) {
+        if (event.getChannel().getIdLong() != pollChannelId || event.getMessage().getIdLong() != pollMessageId) {
             return;
         }
 
@@ -204,4 +209,19 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
         session.setPhase(new PresidentPickingPhaseHandler(session, builders));
     }
 
+    // deleting game session
+    @Override
+    public void phaseEnding() {
+        System.out.println("Ended.");
+        getJDA().getTextChannelById(pollChannelId).deleteMessageById(pollMessageId).complete();
+        App.removeSession(session);
+        getJDA().removeEventListener(session.getIODevice());
+    }
+
+    @Override
+    public int getDurationInMilliseconds() {
+        return 1000 * 60 * 15; // 15 minutes
+    }
+
 }
+
