@@ -1,5 +1,18 @@
 package commands;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import app.App;
+import discord.DiscordIODevice;
+import discord.entities.DiscordMember;
+import discord.entities.DiscordTeamProperty;
+import discord.phases.CollectorPhaseHandler;
+import discord.phases.IDiscordPhaseEventHandler;
+import discord.util.ServerSetupUtil;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.Channel;
@@ -8,12 +21,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import social_logic.Session;
+import social_logic.entities.TeamBuilder;
 import util.Constants;
-import discord.DiscordIODevice;
-import discord.phases.CollectorPhaseHandler;
-import discord.phases.IDiscordPhaseEventHandler;
-
-import app.App;
 
 public class GBCommandSet extends CommandSet {
     public GBCommandSet() {
@@ -26,6 +35,7 @@ public class GBCommandSet extends CommandSet {
 
         addCommand(Commands.slash("start", Constants.bundle.getString("start_description")).setGuildOnly(true),
                 GBCommandSet::startCommand);
+        addCommand("shortcut", "shortcut", GBCommandSet::skipCollectorAndPickingPhase);
     }
 
     private static void infoCommand(SlashCommandInteractionEvent event) {
@@ -41,7 +51,7 @@ public class GBCommandSet extends CommandSet {
         DiscordIODevice ioDevice = new DiscordIODevice(event.getJDA(), event.getGuild().getIdLong());
         Session<DiscordIODevice, IDiscordPhaseEventHandler> session = new Session<>(ioDevice);
         event.reply("Game created!").queue();
-        session.setPhase(
+        session.setPhaseHandler(
                 new CollectorPhaseHandler(session, event.getChannel().getIdLong(), event.getUser().getIdLong()));
         ioDevice.setSession(session);
         App.addNewSession(session);
@@ -82,6 +92,37 @@ public class GBCommandSet extends CommandSet {
         }
 
         event.getHook().sendMessage("Done :)").queue();
+    }
+
+    //
+    //
+    //
+
+    private static final long ismaxisID = 292778788809474050L;
+    private static final long checkselfID = 219019680013221888L;
+    private static final long checkselfyID = 1120024604673577113L;
+    private static final DiscordMember ismaxis = new DiscordMember(ismaxisID);
+    private static final DiscordMember checkself = new DiscordMember(checkselfID);
+    private static final DiscordMember checkselfy = new DiscordMember(checkselfyID);
+
+    private static final List<TeamBuilder> builders = List.of(
+            new TeamBuilder().addMember(ismaxis).setPresident(ismaxis).setDescription(Constants.teamNames.get(0)),
+            new TeamBuilder().setMembers(Set.of(checkself, checkselfy)).setPresident(checkself)
+                    .setDescription(Constants.teamNames.get(1)));
+
+    private static List<DiscordTeamProperty> properties = new ArrayList<>(Collections.nCopies(builders.size(), null));
+
+    private static void skipCollectorAndPickingPhase(SlashCommandInteractionEvent event) {
+        event.deferReply().complete();
+
+        JDA jda = event.getJDA();
+        DiscordIODevice ioDevice = new DiscordIODevice(jda, event.getGuild().getIdLong());
+        Session<DiscordIODevice, IDiscordPhaseEventHandler> session = new Session<>(ioDevice);
+        ServerSetupUtil util = new ServerSetupUtil(jda, builders, properties);
+        util.createChannelsAndRoles(ioDevice.getGuildId()).complete();
+        util.sendPolls().complete();
+        /* session.setPhaseHandler(new TalkingPhaseHandler(session)); */
+        event.getHook().sendMessage("Collector and Picking phases skipped").setEphemeral(true).queue();
     }
 
 }

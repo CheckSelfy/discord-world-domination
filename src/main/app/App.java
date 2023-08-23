@@ -10,6 +10,7 @@ import commands.CommandSet;
 import commands.GBCommandSet;
 import discord.DiscordIODevice;
 import discord.phases.IDiscordPhaseEventHandler;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -22,9 +23,11 @@ public class App extends ListenerAdapter {
     private static ArrayList<Session<DiscordIODevice, IDiscordPhaseEventHandler>> session = new ArrayList<>();
 
     public static void main(String[] args) throws InterruptedException, IOException {
-        JDABuilder.create(loadToken(), EnumSet.allOf(GatewayIntent.class)).addEventListeners(new App()).build();
+        JDA jda = JDABuilder.create(loadToken(), EnumSet.allOf(GatewayIntent.class)).addEventListeners(new App())
+                .build();
 
         commands = new GBCommandSet();
+        commands.updateCommands(jda);
     }
 
     private static String loadToken() throws IOException {
@@ -46,11 +49,11 @@ public class App extends ListenerAdapter {
     public static void removeSession(final Session<DiscordIODevice, IDiscordPhaseEventHandler> s) { session.remove(s); }
 
     public static boolean haveRunningSessionInGuild(long guildId) {
-        for (Session<DiscordIODevice, IDiscordPhaseEventHandler> s: session) {
+        for (Session<DiscordIODevice, IDiscordPhaseEventHandler> s : session) {
             if (s.getIODevice().getGuildId() == guildId) {
                 return true;
             }
         }
         return false;
-    }   
+    }
 }

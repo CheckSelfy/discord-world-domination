@@ -1,6 +1,8 @@
 package discord.phases;
 
 import java.util.ArrayList;
+import java.util.Collections;
+
 import discord.DiscordIODevice;
 import discord.entities.DiscordMember;
 import discord.entities.DiscordTeamProperty;
@@ -22,10 +24,7 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         super(session);
 
         this.phaseLogic = new PresidentPickingPhaseLogic(this, builders);
-        this.properties = new ArrayList<>(builders.size());
-        for (int i = 0; i < builders.size(); i++) {
-            properties.add(null);
-        }
+        this.properties = new ArrayList<>(Collections.nCopies(builders.size(), null));
 
         ServerSetupUtil util = new ServerSetupUtil(getJDA(), builders, properties);
         util.createChannelsAndRoles(session.getIODevice().getGuildId()).complete();

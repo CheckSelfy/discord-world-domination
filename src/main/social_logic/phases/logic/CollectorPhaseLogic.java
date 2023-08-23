@@ -17,9 +17,6 @@ public class CollectorPhaseLogic {
     public CollectorPhaseLogic(ICollectorPhaseEventHandler handler) {
         this.handler = handler;
         this.builders = new ArrayList<>();
-        // for (int i = 0; i < Constants.COUNTRIES_COUNT; i++) {
-        //     builders.add(new TeamBuilder());
-        // }
     }
 
     public void collectMembers(ArrayList<Set<IMember>> members) {
@@ -28,8 +25,8 @@ public class CollectorPhaseLogic {
         for (int i = 0; i < Constants.COUNTRIES_COUNT; i++) {
             if (!members.get(i).isEmpty()) {
                 this.builders.add(new TeamBuilder()
-                    .setMembers(members.get(i))
-                    .setDescription(Constants.teamNames.get(i)));
+                        .setMembers(members.get(i))
+                        .setDescription(Constants.teamNames.get(i)));
             }
         }
 

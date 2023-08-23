@@ -30,11 +30,11 @@ import util.Constants;
 public class ServerSetupUtil {
     private final JDA jda;
     private final List<TeamBuilder> teamBuilders;
-    private final ArrayList<DiscordTeamProperty> properties;
+    private final List<DiscordTeamProperty> properties;
 
     private static final String pickPresident = "votePresident";
 
-    public ServerSetupUtil(JDA jda, List<TeamBuilder> teamBuilders, ArrayList<DiscordTeamProperty> properties) {
+    public ServerSetupUtil(JDA jda, List<TeamBuilder> teamBuilders, List<DiscordTeamProperty> properties) {
         this.jda = jda;
         this.teamBuilders = teamBuilders;
         this.properties = properties;
