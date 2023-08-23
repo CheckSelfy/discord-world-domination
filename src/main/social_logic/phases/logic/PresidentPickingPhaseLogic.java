@@ -2,23 +2,25 @@ package social_logic.phases.logic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
 import social_logic.entities.IMember;
+import social_logic.entities.Team;
 import social_logic.entities.TeamBuilder;
 import social_logic.phases.handlers_interfaces.IPresidentPickingPhaseEventHandler;
 
 public class PresidentPickingPhaseLogic {
-    private final ArrayList<TeamBuilder> builders;
+    private final List<? extends TeamBuilder> builders;
     private final IPresidentPickingPhaseEventHandler handler;
-    private final ArrayList<Map<IMember, IMember>> votes;
+    private final List<Map<IMember, IMember>> votes;
 
     private final Map<IMember, Map<IMember, IMember>> memberToTeam;
 
     public PresidentPickingPhaseLogic(IPresidentPickingPhaseEventHandler handler,
-            ArrayList<TeamBuilder> builders) {
+            List<? extends TeamBuilder> builders) {
         this.builders = builders;
         this.handler = handler;
         this.votes = new ArrayList<>(builders.size());
@@ -64,6 +66,11 @@ public class PresidentPickingPhaseLogic {
         }
 
         handler.nextPhase();
+    }
+
+    public List<Team> buildTeams() {
+        // List<Team>
+        return null;
     }
 
 }

@@ -37,12 +37,10 @@ public class TeamBuilder {
 
     public Team build() { return new Team(members, president, description); }
 
-
     public Set<IMember> getMembers() { return members; }
-
 
     public IMember getPresident() { return president; }
 
-
     public CountryDescription getDescription() { return description; }
+
 }

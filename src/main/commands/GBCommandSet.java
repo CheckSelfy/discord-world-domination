@@ -1,14 +1,12 @@
 package commands;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import app.App;
 import discord.DiscordIODevice;
 import discord.entities.DiscordMember;
-import discord.entities.DiscordTeamProperty;
+import discord.entities.DiscordTeamBuilder;
 import discord.phases.CollectorPhaseHandler;
 import discord.phases.IDiscordPhaseEventHandler;
 import discord.util.ServerSetupUtil;
@@ -21,7 +19,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import social_logic.Session;
-import social_logic.entities.TeamBuilder;
 import util.Constants;
 
 public class GBCommandSet extends CommandSet {
@@ -105,12 +102,11 @@ public class GBCommandSet extends CommandSet {
     private static final DiscordMember checkself = new DiscordMember(checkselfID);
     private static final DiscordMember checkselfy = new DiscordMember(checkselfyID);
 
-    private static final List<TeamBuilder> builders = List.of(
-            new TeamBuilder().addMember(ismaxis).setPresident(ismaxis).setDescription(Constants.teamNames.get(0)),
-            new TeamBuilder().setMembers(Set.of(checkself, checkselfy)).setPresident(checkself)
+    private static final List<DiscordTeamBuilder> builders = List.of(
+            new DiscordTeamBuilder().addMember(ismaxis).setPresident(ismaxis)
+                    .setDescription(Constants.teamNames.get(0)),
+            new DiscordTeamBuilder().setMembers(Set.of(checkself, checkselfy)).setPresident(checkself)
                     .setDescription(Constants.teamNames.get(1)));
-
-    private static List<DiscordTeamProperty> properties = new ArrayList<>(Collections.nCopies(builders.size(), null));
 
     private static void skipCollectorAndPickingPhase(SlashCommandInteractionEvent event) {
         event.deferReply().complete();
@@ -118,7 +114,7 @@ public class GBCommandSet extends CommandSet {
         JDA jda = event.getJDA();
         DiscordIODevice ioDevice = new DiscordIODevice(jda, event.getGuild().getIdLong());
         Session<DiscordIODevice, IDiscordPhaseEventHandler> session = new Session<>(ioDevice);
-        ServerSetupUtil util = new ServerSetupUtil(jda, builders, properties);
+        ServerSetupUtil util = new ServerSetupUtil(jda, builders);
         util.createChannelsAndRoles(ioDevice.getGuildId()).complete();
         util.sendPolls().complete();
         /* session.setPhaseHandler(new TalkingPhaseHandler(session)); */

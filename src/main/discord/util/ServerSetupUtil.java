@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import discord.entities.DiscordTeamBuilder;
 import discord.entities.DiscordTeamProperty;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
@@ -29,15 +30,13 @@ import util.Constants;
 
 public class ServerSetupUtil {
     private final JDA jda;
-    private final List<TeamBuilder> teamBuilders;
-    private final List<DiscordTeamProperty> properties;
+    private final List<DiscordTeamBuilder> teamBuilders;
 
     private static final String pickPresident = "votePresident";
 
-    public ServerSetupUtil(JDA jda, List<TeamBuilder> teamBuilders, List<DiscordTeamProperty> properties) {
+    public ServerSetupUtil(JDA jda, List<DiscordTeamBuilder> teamBuilders) {
         this.jda = jda;
         this.teamBuilders = teamBuilders;
-        this.properties = properties;
     }
 
     public RestAction<?> sendPolls() {
@@ -57,7 +56,7 @@ public class ServerSetupUtil {
                     .addActionRow(Button.of(ButtonStyle.PRIMARY, "proceedVotes" + i, "[DEBUG] Proceed votes"))
                     .build();
 
-            MessageCreateAction sendMessage = jda.getVoiceChannelById(properties.get(i).voiceChatID())
+            MessageCreateAction sendMessage = jda.getVoiceChannelById(teamBuilders.get(i).getProperty().voiceChatID())
                     .sendMessage(message);
             actions.add(sendMessage);
         }
@@ -79,7 +78,8 @@ public class ServerSetupUtil {
             RestAction<List<Void>> addMembersToRole = addMembersToRole(role, builder.getMembers());
             RestAction<VoiceChannel> createVC = createVoiceTeamChannel(category, role,
                     builder.getDescription().getName())
-                            .onSuccess(vc -> properties.set(index, new DiscordTeamProperty(vc.getIdLong(), roleId)));
+                            .onSuccess(vc -> teamBuilders.get(index)
+                                    .setProperty(new DiscordTeamProperty(vc.getIdLong(), roleId)));
             actions.add(addMembersToRole);
             actions.add(createVC);
         }

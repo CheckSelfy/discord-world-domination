@@ -1,11 +1,10 @@
 package discord.phases;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 
 import discord.DiscordIODevice;
 import discord.entities.DiscordMember;
-import discord.entities.DiscordTeamProperty;
+import discord.entities.DiscordTeamBuilder;
 import discord.util.ServerSetupUtil;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
@@ -17,16 +16,14 @@ import social_logic.phases.logic.PresidentPickingPhaseLogic;
 public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         implements IPresidentPickingPhaseEventHandler {
     private final PresidentPickingPhaseLogic phaseLogic;
-    private final ArrayList<DiscordTeamProperty> properties;
 
     public PresidentPickingPhaseHandler(Session<DiscordIODevice, IDiscordPhaseEventHandler> session,
-            ArrayList<TeamBuilder> builders) {
+            List<DiscordTeamBuilder> builders) {
         super(session);
 
         this.phaseLogic = new PresidentPickingPhaseLogic(this, builders);
-        this.properties = new ArrayList<>(Collections.nCopies(builders.size(), null));
 
-        ServerSetupUtil util = new ServerSetupUtil(getJDA(), builders, properties);
+        ServerSetupUtil util = new ServerSetupUtil(getJDA(), builders);
         util.createChannelsAndRoles(session.getIODevice().getGuildId()).complete();
         util.sendPolls().complete();
         scheduleEnd();
@@ -47,13 +44,14 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
     @Override
     public void phaseEnding() {
         phaseLogic.proceedVotes();
+
+        // [DEBUG]
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < phaseLogic.getTeamCount(); i++) {
             TeamBuilder t = phaseLogic.getTeamBuilder(i);
             sb.append(t.getDescription().getFullName()).append(": ");
             sb.append(getJDA().getUserById(t.getPresident().getID()).getName()).append("\n");
         }
-
         getJDA().getTextChannelById(1125882793331785783L).sendMessage(sb.toString()).queue();
         System.out.println("Ended pres-picking.");
     }
@@ -66,9 +64,6 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         phaseEnding();
     }
 
-    public void nextPhase() {
-        System.out.println("Next phase");
-        /* session.setPhase(new TalkingPhase(session)); */
-    }
+    public void nextPhase() { session.setPhaseHandler(new TalkingPhaseEventHandler(session, phaseLogic.buildTeams())); }
 
 }

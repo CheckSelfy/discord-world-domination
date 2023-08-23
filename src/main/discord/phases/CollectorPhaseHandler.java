@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import app.App;
 import discord.DiscordIODevice;
 import discord.entities.DiscordMember;
+import discord.entities.DiscordTeamBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -25,7 +26,6 @@ import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import social_logic.Session;
 import social_logic.entities.IMember;
-import social_logic.entities.TeamBuilder;
 import social_logic.phases.handlers_interfaces.ICollectorPhaseEventHandler;
 import social_logic.phases.logic.CollectorPhaseLogic;
 import util.Constants;
@@ -33,9 +33,9 @@ import util.DiscordUtil;
 import util.GameUtil;
 
 public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
-        implements ICollectorPhaseEventHandler {
+        implements ICollectorPhaseEventHandler<DiscordTeamBuilder> {
     private final List<Set<Long>> teams; // teams stored in same order as in Constants.teamNames
-    private final CollectorPhaseLogic phaseLogic;
+    private final CollectorPhaseLogic<DiscordTeamBuilder> phaseLogic;
     private boolean phaseEnded = false;
     private final Lock lock = new ReentrantLock(true);
 
@@ -60,7 +60,7 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
                 .flatMap(msg -> GameUtil.putCountriesEmoji(msg))
                 .complete().getIdLong();
 
-        phaseLogic = new CollectorPhaseLogic(this);
+        phaseLogic = new CollectorPhaseLogic<>(this, () -> new DiscordTeamBuilder());
         System.out.println("Started");
 
         scheduleEnd();
@@ -204,7 +204,7 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
     }
 
     @Override
-    public void nextPhase(ArrayList<TeamBuilder> builders) {
+    public void nextPhase(List<DiscordTeamBuilder> builders) {
         phaseEnded = true;
         session.setPhaseHandler(new PresidentPickingPhaseHandler(session, builders));
     }
