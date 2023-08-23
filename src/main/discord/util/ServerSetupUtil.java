@@ -25,7 +25,6 @@ import net.dv8tion.jda.api.requests.restaction.RoleAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import social_logic.entities.IMember;
-import social_logic.entities.TeamBuilder;
 import util.Constants;
 
 public class ServerSetupUtil {
@@ -39,30 +38,6 @@ public class ServerSetupUtil {
         this.teamBuilders = teamBuilders;
     }
 
-    public RestAction<?> sendPolls() {
-        List<MessageCreateAction> actions = new ArrayList<>(teamBuilders.size());
-        for (int i = 0; i < teamBuilders.size(); i++) {
-            Set<IMember> members = teamBuilders.get(i).getMembers();
-            Builder menuBuilder = StringSelectMenu.create(pickPresident + i); // id of interaction
-            for (IMember m : members) {
-                User user = jda.getUserById(m.getID());
-                menuBuilder.addOption(user.getName(), user.getId());
-            }
-
-            MessageCreateData message = new MessageCreateBuilder()
-                    .setContent("Pick your president!")
-                    .addActionRow(menuBuilder.build())
-                    // TODO: remove debug button
-                    .addActionRow(Button.of(ButtonStyle.PRIMARY, "proceedVotes" + i, "[DEBUG] Proceed votes"))
-                    .build();
-
-            MessageCreateAction sendMessage = jda.getVoiceChannelById(teamBuilders.get(i).getProperty().voiceChatID())
-                    .sendMessage(message);
-            actions.add(sendMessage);
-        }
-        return RestAction.allOf(actions);
-    }
-
     public RestAction<?> createChannelsAndRoles(long guildId) {
         Guild guild = jda.getGuildById(guildId);
         Category category = guild.createCategory(Constants.bundle.getString("game_name")).complete();
@@ -74,7 +49,7 @@ public class ServerSetupUtil {
             Role role = roles.get(i);
             final int index = i;
             final long roleId = role.getIdLong();
-            TeamBuilder builder = teamBuilders.get(i);
+            DiscordTeamBuilder builder = teamBuilders.get(i);
             RestAction<List<Void>> addMembersToRole = addMembersToRole(role, builder.getMembers());
             RestAction<VoiceChannel> createVC = createVoiceTeamChannel(category, role,
                     builder.getDescription().getName())
@@ -90,7 +65,7 @@ public class ServerSetupUtil {
     public RestAction<List<Role>> createRoles(Guild guild) {
         List<RoleAction> actions = new ArrayList<>(teamBuilders.size());
         for (int i = 0; i < teamBuilders.size(); i++) {
-            TeamBuilder builder = teamBuilders.get(i);
+            DiscordTeamBuilder builder = teamBuilders.get(i);
             RoleAction action = guild.createRole()
                     .setName(builder.getDescription().getName())
                     .setColor(builder.getDescription().getColor())
@@ -123,6 +98,30 @@ public class ServerSetupUtil {
                         role.getIdLong(),
                         Permission.VOICE_CONNECT.getRawValue(),
                         0);
+    }
+
+    public RestAction<?> sendPolls() {
+        List<MessageCreateAction> actions = new ArrayList<>(teamBuilders.size());
+        for (int i = 0; i < teamBuilders.size(); i++) {
+            Set<IMember> members = teamBuilders.get(i).getMembers();
+            Builder menuBuilder = StringSelectMenu.create(pickPresident + i); // id of interaction
+            for (IMember m : members) {
+                User user = jda.getUserById(m.getID());
+                menuBuilder.addOption(user.getName(), user.getId());
+            }
+
+            MessageCreateData message = new MessageCreateBuilder()
+                    .setContent("Pick your president!")
+                    .addActionRow(menuBuilder.build())
+                    // TODO: remove debug button
+                    .addActionRow(Button.of(ButtonStyle.PRIMARY, "proceedVotes" + i, "[DEBUG] Proceed votes"))
+                    .build();
+
+            MessageCreateAction sendMessage = jda.getVoiceChannelById(teamBuilders.get(i).getProperty().voiceChatID())
+                    .sendMessage(message);
+            actions.add(sendMessage);
+        }
+        return RestAction.allOf(actions);
     }
 
 }

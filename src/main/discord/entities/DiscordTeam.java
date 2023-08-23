@@ -15,4 +15,6 @@ public class DiscordTeam extends Team {
         this.property = property;
     }
 
+    public DiscordTeamProperty getProperty() { return property; }
+
 }

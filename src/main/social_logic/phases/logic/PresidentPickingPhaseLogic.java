@@ -12,15 +12,15 @@ import social_logic.entities.Team;
 import social_logic.entities.TeamBuilder;
 import social_logic.phases.handlers_interfaces.IPresidentPickingPhaseEventHandler;
 
-public class PresidentPickingPhaseLogic {
-    private final List<? extends TeamBuilder> builders;
+public class PresidentPickingPhaseLogic<TB extends TeamBuilder<T>, T extends Team> {
+    private final List<TB> builders;
     private final IPresidentPickingPhaseEventHandler handler;
     private final List<Map<IMember, IMember>> votes;
 
     private final Map<IMember, Map<IMember, IMember>> memberToTeam;
 
     public PresidentPickingPhaseLogic(IPresidentPickingPhaseEventHandler handler,
-            List<? extends TeamBuilder> builders) {
+            List<TB> builders) {
         this.builders = builders;
         this.handler = handler;
         this.votes = new ArrayList<>(builders.size());
@@ -34,7 +34,7 @@ public class PresidentPickingPhaseLogic {
         }
     }
 
-    public TeamBuilder getTeamBuilder(int index) { return builders.get(index); }
+    public TB getTeamBuilder(int index) { return builders.get(index); }
 
     public int getTeamCount() { return builders.size(); }
 
@@ -68,9 +68,12 @@ public class PresidentPickingPhaseLogic {
         handler.nextPhase();
     }
 
-    public List<Team> buildTeams() {
-        // List<Team>
-        return null;
+    public List<T> buildTeams() {
+        List<T> teams = new ArrayList<>(builders.size());
+        for (TB builder : builders) {
+            teams.add(builder.build());
+        }
+        return teams;
     }
 
 }

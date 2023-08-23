@@ -1,14 +1,17 @@
 package commands;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import app.App;
 import discord.DiscordIODevice;
 import discord.entities.DiscordMember;
+import discord.entities.DiscordTeam;
 import discord.entities.DiscordTeamBuilder;
 import discord.phases.CollectorPhaseHandler;
 import discord.phases.IDiscordPhaseEventHandler;
+import discord.phases.TalkingPhaseHandler;
 import discord.util.ServerSetupUtil;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
@@ -116,9 +119,17 @@ public class GBCommandSet extends CommandSet {
         Session<DiscordIODevice, IDiscordPhaseEventHandler> session = new Session<>(ioDevice);
         ServerSetupUtil util = new ServerSetupUtil(jda, builders);
         util.createChannelsAndRoles(ioDevice.getGuildId()).complete();
-        util.sendPolls().complete();
-        /* session.setPhaseHandler(new TalkingPhaseHandler(session)); */
+        // util.sendPolls().complete();
+        session.setPhaseHandler(new TalkingPhaseHandler(session, buildTeams(builders)));
         event.getHook().sendMessage("Collector and Picking phases skipped").setEphemeral(true).queue();
+    }
+
+    private static List<DiscordTeam> buildTeams(List<DiscordTeamBuilder> builders) {
+        List<DiscordTeam> teams = new ArrayList<>(builders.size());
+        for (DiscordTeamBuilder builder : builders) {
+            teams.add(builder.build());
+        }
+        return teams;
     }
 
 }

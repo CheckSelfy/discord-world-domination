@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import app.App;
 import discord.DiscordIODevice;
 import discord.entities.DiscordMember;
+import discord.entities.DiscordTeam;
 import discord.entities.DiscordTeamBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -33,9 +34,9 @@ import util.DiscordUtil;
 import util.GameUtil;
 
 public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
-        implements ICollectorPhaseEventHandler<DiscordTeamBuilder> {
-    private final List<Set<Long>> teams; // teams stored in same order as in Constants.teamNames
-    private final CollectorPhaseLogic<DiscordTeamBuilder> phaseLogic;
+        implements ICollectorPhaseEventHandler<DiscordTeamBuilder, DiscordTeam> {
+    private final List<Set<Long>> teamIds; // teams stored in same order as in Constants.teamNames
+    private final CollectorPhaseLogic<DiscordTeamBuilder, DiscordTeam> logic;
     private boolean phaseEnded = false;
     private final Lock lock = new ReentrantLock(true);
 
@@ -48,9 +49,9 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
             long pollCreatorId) {
         super(session);
 
-        teams = new ArrayList<>(Constants.COUNTRIES_COUNT);
+        teamIds = new ArrayList<>(Constants.COUNTRIES_COUNT);
         for (int i = 0; i < Constants.COUNTRIES_COUNT; i++) {
-            teams.add(new HashSet<>());
+            teamIds.add(new HashSet<>());
         }
 
         this.pollChannelId = pollChannelId;
@@ -60,7 +61,7 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
                 .flatMap(msg -> GameUtil.putCountriesEmoji(msg))
                 .complete().getIdLong();
 
-        phaseLogic = new CollectorPhaseLogic<>(this, () -> new DiscordTeamBuilder());
+        logic = new CollectorPhaseLogic<>(this, () -> new DiscordTeamBuilder());
         System.out.println("Started");
 
         scheduleEnd();
@@ -91,7 +92,7 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
             event.getHook().editMessageById(pollMessageId, changes).flatMap(msg -> msg.clearReactions())
                     .queue();
 
-            phaseLogic.collectMembers(idsToMembers());
+            logic.collectMembers(idsToMembers());
         } else {
             event.getHook().sendMessage("Each user should be in one team only").setEphemeral(true).queue();
         }
@@ -99,8 +100,8 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
     }
 
     private ArrayList<Set<IMember>> idsToMembers() {
-        ArrayList<Set<IMember>> result = new ArrayList<>(teams.size());
-        for (Set<Long> s : teams) {
+        ArrayList<Set<IMember>> result = new ArrayList<>(teamIds.size());
+        for (Set<Long> s : teamIds) {
             HashSet<IMember> newHashSet = new HashSet<>(s.size());
             for (long userId : s) {
                 newHashSet.add(new DiscordMember(userId));
@@ -115,7 +116,7 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
 
         for (int i = 0; i < Constants.COUNTRIES_COUNT; i++) {
             StringJoiner joiner = new StringJoiner(", ");
-            for (Long user : teams.get(i))
+            for (Long user : teamIds.get(i))
                 if (getJDA().getSelfUser().getIdLong() != user) {
                     joiner.add(DiscordUtil.getDiscordMentionTag(user));
                 }
@@ -149,9 +150,9 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
         }
 
         if (event instanceof MessageReactionAddEvent) {
-            teams.get(team).add(event.getUserIdLong());
+            teamIds.get(team).add(event.getUserIdLong());
         } else {
-            teams.get(team).remove(event.getUserIdLong());
+            teamIds.get(team).remove(event.getUserIdLong());
         }
 
         updateMessage();
@@ -160,7 +161,7 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
 
     private boolean hasRepeaterUsers() {
         Set<Long> users = new HashSet<>();
-        for (Set<Long> team : teams) {
+        for (Set<Long> team : teamIds) {
             for (Long id : team) {
                 if (users.contains(id)) {
                     return true;

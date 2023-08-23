@@ -6,7 +6,7 @@ import languages.CountryDescription;
 import social_logic.entities.IMember;
 import social_logic.entities.TeamBuilder;
 
-public class DiscordTeamBuilder extends TeamBuilder {
+public class DiscordTeamBuilder extends TeamBuilder<DiscordTeam> {
     private DiscordTeamProperty property;
 
     public DiscordTeamProperty getProperty() { return property; }
