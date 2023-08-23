@@ -10,7 +10,7 @@ public class Session<D extends IODevice<D, H>, H extends IPhaseEventHandler> {
 
     public H getPhase() { return curPhase; }
 
-    public void setPhase(H phase) { curPhase = phase; }
+    public void setPhaseHandler(H phase) { curPhase = phase; }
 
     public D getIODevice() { return ioDevice; }
 }

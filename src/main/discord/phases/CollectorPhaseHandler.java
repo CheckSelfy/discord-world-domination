@@ -206,7 +206,7 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
     @Override
     public void nextPhase(ArrayList<TeamBuilder> builders) {
         phaseEnded = true;
-        session.setPhase(new PresidentPickingPhaseHandler(session, builders));
+        session.setPhaseHandler(new PresidentPickingPhaseHandler(session, builders));
     }
 
     // deleting game session
