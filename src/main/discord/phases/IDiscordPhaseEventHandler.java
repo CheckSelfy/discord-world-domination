@@ -7,6 +7,7 @@ import social_logic.phases.handlers_interfaces.IPhaseEventHandler;
 
 public interface IDiscordPhaseEventHandler extends IPhaseEventHandler {
     public void phaseEnding();
+
     public int getDurationInMilliseconds();
 
     static final String DEBUG_DEFAULT_REPLY = "[DEBUG] Default reply";
@@ -15,5 +16,7 @@ public interface IDiscordPhaseEventHandler extends IPhaseEventHandler {
 
     public default void onGenericMessageReaction(GenericMessageReactionEvent event) {};
 
-    public default void onStringSelectInteraction(StringSelectInteractionEvent event) { event.reply(DEBUG_DEFAULT_REPLY); };
+    public default void onStringSelectInteraction(StringSelectInteractionEvent event) {
+        event.reply(DEBUG_DEFAULT_REPLY);
+    };
 }

@@ -50,6 +50,7 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
 
         createChannelsAndRoles().complete();
         sendPolls().complete();
+        scheduleEnd();
     }
 
     private static final String pickPresident = "votePresident";
@@ -87,8 +88,8 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
 
         for (int i = 0; i < phaseLogic.getTeamCount(); i++) {
             Role role = roles.get(i);
-            final int index = i; 
-            final long roleId = role.getIdLong(); 
+            final int index = i;
+            final long roleId = role.getIdLong();
             TeamBuilder builder = phaseLogic.getTeamBuilder(i);
             RestAction<List<Void>> addMembersToRole = addMembersToRole(role, builder.getMembers());
             RestAction<VoiceChannel> createVC = createVoiceTeamChannel(category, role,
@@ -148,37 +149,34 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         System.out.println("[" + voter + "] -> " + "[" + voted + "]");
     }
 
-    public void phaseEnding() { // TODO Auto-generated method stub
-        // summing up votes.
-        // ...
-        // nextPhase();
+    @Override
+    public int getDurationInMilliseconds() { return 1000 * 60 * 3; }
+
+    @Override
+    public void phaseEnding() {
+        phaseLogic.proceedVotes();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < phaseLogic.getTeamCount(); i++) {
+            TeamBuilder t = phaseLogic.getTeamBuilder(i);
+            sb.append(t.getDescription().getFullName()).append(": ");
+            sb.append(getJDA().getUserById(t.getPresident().getID()).getName()).append("\n");
+        }
+
+        getJDA().getTextChannelById(1125882793331785783L).sendMessage(sb.toString()).queue();
         System.out.println("Ended pres-picking.");
-        throw new UnsupportedOperationException("Unimplemented method 'phaseEnding'");
     }
 
     // TODO: remove debug button
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
         event.deferEdit().queue();
-
-        phaseLogic.proceedVotes();
-
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < phaseLogic.getTeamCount(); i++) {
-            TeamBuilder t = phaseLogic.getTeamBuilder(i);
-            sb.append(getJDA().getUserById(t.getPresident().getID()).getName()).append("\n");
-        }
-
-        event.getChannel().asVoiceChannel().sendMessage(sb.toString()).queue();
-        System.out.println("Votes proceeded");
+        cancelTimer();
+        phaseEnding();
     }
 
     public void nextPhase() {
         System.out.println("Next phase");
         /* session.setPhase(new TalkingPhase(session)); */
     }
-
-    public int getDurationInMilliseconds() { // TODO Auto-generated method stub
-    return 0; }
 
 }

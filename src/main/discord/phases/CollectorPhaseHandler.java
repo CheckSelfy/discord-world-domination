@@ -64,7 +64,7 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
         System.out.println("Started");
 
         scheduleEnd();
-        scheduleBeforeEnd(() -> System.out.println("5 seconds to go!"), 5_000); // TODO: Example. Remove it 
+        scheduleBeforeEnd(() -> System.out.println("5 seconds to go!"), 5_000); // TODO: Example. Remove it
     }
 
     @Override
@@ -219,9 +219,6 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
     }
 
     @Override
-    public int getDurationInMilliseconds() {
-        return 1000 * 60 * 15; // 15 minutes
-    }
+    public int getDurationInMilliseconds() { return 1000 * 60 * 15; }
 
 }
-

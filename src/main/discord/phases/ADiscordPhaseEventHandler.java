@@ -17,9 +17,7 @@ public abstract class ADiscordPhaseEventHandler implements IDiscordPhaseEventHan
         this.timer = new Timer();
     }
 
-    protected void scheduleEnd() {
-        schedule(this::phaseEnding, getDurationInMilliseconds());
-    }
+    protected void scheduleEnd() { schedule(this::phaseEnding, getDurationInMilliseconds()); }
 
     private void schedule(Procedure f, int timeInMilliSeconds) {
         timer.schedule(new TimerTask() {
@@ -29,13 +27,13 @@ public abstract class ADiscordPhaseEventHandler implements IDiscordPhaseEventHan
     }
 
     protected void scheduleBeforeEnd(Procedure f, int timeInMilliSeconds) {
-        schedule(f, getDurationInMilliseconds() - timeInMilliSeconds);
+        int remains = getDurationInMilliseconds() - timeInMilliSeconds;
+        if (remains > 0) {
+            schedule(f, remains);
+        }
     }
 
-    protected void cancelTimer() {
-        timer.cancel();
-    }
-
+    protected void cancelTimer() { timer.cancel(); }
 
     protected JDA getJDA() { return session.getIODevice().getJDA(); }
 
