@@ -2,8 +2,11 @@ package discord.phases;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import discord.DiscordIODevice;
 import discord.entities.DiscordMember;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -29,8 +32,10 @@ import util.GameUtil;
 
 public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
         implements ICollectorPhaseEventHandler {
-    private final ArrayList<Set<Long>> teams; // teams stored in same order as in Constants.teamNames
+    private final List<Set<Long>> teams; // teams stored in same order as in Constants.teamNames
     private final CollectorPhaseLogic phaseLogic;
+    private boolean phaseEnded = false;
+    private final Lock lock = new ReentrantLock(true);
 
     private long pollChannelId;
     private long pollMessageId;
@@ -57,11 +62,6 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
     }
 
     @Override
-    public void nextPhase(ArrayList<TeamBuilder> builders) {
-        session.setPhase(new PresidentPickingPhaseHandler(session, builders));
-    }
-
-    @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
         if (event.getChannel().getIdLong() != pollChannelId ||
                 event.getMessage().getIdLong() != pollMessageId) {
@@ -79,12 +79,18 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
 
         event.deferEdit().queue();
 
-        MessageEditData changes = new MessageEditBuilder().setComponents().setEmbeds(buildEmbedWithUsers(false))
-                .build();
-        event.getHook().editMessageById(pollMessageId, changes).flatMap(msg -> msg.clearReactions())
-                .queue();
+        lock.lock();
+        if (!hasRepeaterUsers()) {
+            MessageEditData changes = new MessageEditBuilder().setComponents().setEmbeds(buildEmbedWithUsers(false))
+                    .build();
+            event.getHook().editMessageById(pollMessageId, changes).flatMap(msg -> msg.clearReactions())
+                    .queue();
 
-        phaseLogic.collectMembers(idsToMembers());
+            phaseLogic.collectMembers(idsToMembers());
+        } else {
+            event.getHook().sendMessage("Each user should be in one team only").setEphemeral(true).queue();
+        }
+        lock.unlock();
     }
 
     private ArrayList<Set<IMember>> idsToMembers() {
@@ -132,6 +138,11 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
             return;
         }
 
+        lock.lock();
+        if (phaseEnded) {
+            return;
+        }
+
         if (event instanceof MessageReactionAddEvent) {
             teams.get(team).add(event.getUserIdLong());
         } else {
@@ -139,6 +150,20 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
         }
 
         updateMessage();
+        lock.unlock();
+    }
+
+    private boolean hasRepeaterUsers() {
+        Set<Long> users = new HashSet<>();
+        for (Set<Long> team : teams) {
+            for (Long id : team) {
+                if (users.contains(id)) {
+                    return true;
+                }
+                users.add(id);
+            }
+        }
+        return false;
     }
 
     private static int getTeamByEmoji(Emoji emoji) {
@@ -164,13 +189,19 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
     private MessageEditData getEditMessageData() {
         return new MessageEditBuilder()
                 .setEmbeds(buildEmbedWithUsers(true))
-                .setActionRow(button.asEnabled()).build();
+                .setActionRow(hasRepeaterUsers() ? button.asDisabled() : button.asEnabled()).build();
     }
 
     private void updateMessage() {
         getJDA().getTextChannelById(pollChannelId)
                 .editMessageById(pollMessageId, getEditMessageData())
                 .queue();
+    }
+
+    @Override
+    public void nextPhase(ArrayList<TeamBuilder> builders) {
+        phaseEnded = true;
+        session.setPhase(new PresidentPickingPhaseHandler(session, builders));
     }
 
 }
