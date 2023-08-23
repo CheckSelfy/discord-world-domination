@@ -20,7 +20,7 @@ import util.Constants;
 
 public class App extends ListenerAdapter {
     private static CommandSet commands;
-    private static ArrayList<Session<DiscordIODevice, IDiscordPhaseEventHandler>> session = new ArrayList<>();
+    private static ArrayList<Session<DiscordIODevice, IDiscordPhaseEventHandler>> sessions = new ArrayList<>();
 
     public static void main(String[] args) throws InterruptedException, IOException {
         JDA jda = JDABuilder.create(loadToken(), EnumSet.allOf(GatewayIntent.class)).addEventListeners(new App())
@@ -44,13 +44,22 @@ public class App extends ListenerAdapter {
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) { commands.accept(event); }
 
     // Session lifetime control
-    public static void addNewSession(final Session<DiscordIODevice, IDiscordPhaseEventHandler> s) { session.add(s); }
+    public static void addNewSession(Session<DiscordIODevice, IDiscordPhaseEventHandler> s) { sessions.add(s); }
 
-    public static void removeSession(final Session<DiscordIODevice, IDiscordPhaseEventHandler> s) { session.remove(s); }
+    public static void removeSession(Session<DiscordIODevice, IDiscordPhaseEventHandler> s) { sessions.remove(s); }
+
+    public static void removeSession(long guildId) {
+        for (int i = 0; i < sessions.size(); i++) {
+            if (sessions.get(i).getIODevice().getGuildId() == guildId) {
+                sessions.remove(i);
+                return;
+            }
+        }
+    }
 
     public static boolean haveRunningSessionInGuild(long guildId) {
-        for (Session<DiscordIODevice, IDiscordPhaseEventHandler> s : session) {
-            if (s.getIODevice().getGuildId() == guildId) {
+        for (Session<DiscordIODevice, IDiscordPhaseEventHandler> session : sessions) {
+            if (session.getIODevice().getGuildId() == guildId) {
                 return true;
             }
         }

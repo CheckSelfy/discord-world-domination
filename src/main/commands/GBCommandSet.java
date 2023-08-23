@@ -99,6 +99,7 @@ public class GBCommandSet extends CommandSet {
             }
         }
 
+        App.removeSession(event.getGuild().getIdLong());
         event.getHook().sendMessage("Done :)").queue();
     }
 

@@ -103,7 +103,7 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
     public void phaseEnding() {}
 
     @Override
-    public int getDurationInMilliseconds() { return 1000000000; }
+    public int getDurationInMilliseconds() { return 0; }
 
     @Override
     public void nextPhase() {}
