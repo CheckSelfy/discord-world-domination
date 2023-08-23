@@ -76,23 +76,27 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
 
     @Override
     public void onStringSelectInteraction(StringSelectInteractionEvent event) {
-        int recipientTeamId = Integer.parseInt(event.getValues().get(0));
-        System.out.println(recipientTeamId);
-        event.deferEdit().queue();
         DiscordTeam senderTeam = channelToTeam.get(event.getChannel().asVoiceChannel().getIdLong());
+        event.deferEdit().queue();
+        if (event.getUser().getIdLong() != senderTeam.getPresident().getID()) {
+            event.getHook().sendMessage("Only president can send requests").setEphemeral(true).queue();
+            return;
+        }
+
+        int recipientTeamId = Integer.parseInt(event.getValues().get(0));
         getJDA().getVoiceChannelById(logic.getTeams().get(recipientTeamId).getProperty().voiceChatID())
                 .sendMessage(createAcceptDelegationMessage(senderTeam.getDescription().getFullName())).queue();
         event.getHook().sendMessage("Invite send").setEphemeral(true).queue();
     }
 
     private static final Button acceptDelegation = Button.of(ButtonStyle.SUCCESS, "accept_delegation", "Accept");
-    private static final Button denyDelegation = Button.of(ButtonStyle.DANGER, "deny_delegation", "Accept");
+    private static final Button denyDelegation = Button.of(ButtonStyle.DANGER, "deny_delegation", "Deny");
 
     private MessageCreateData createAcceptDelegationMessage(String countyName) {
         return new MessageCreateBuilder()
                 .setContent(countyName + " requests permission to delegate")
-                .addActionRow(acceptDelegation)
-                .addActionRow(denyDelegation).build();
+                .addActionRow(acceptDelegation, denyDelegation)
+                .build();
     }
 
     @Override
