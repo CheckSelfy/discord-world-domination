@@ -4,7 +4,7 @@ import game.Game;
 import game.Order.Action;
 import game.entities.Country;
 
-public class TransferMoneyAction extends Action {
+public class TransferMoneyAction extends Action<Country> {
     private final Country transferTo;
     private final int amount;
 
@@ -15,7 +15,7 @@ public class TransferMoneyAction extends Action {
     }
 
     @Override
-    public void doAction(Game game) {
+    public void doAction(Game<Country> game) {
         getCountry().pay(amount);
         transferTo.recieve(amount);
     }

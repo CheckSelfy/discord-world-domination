@@ -1,16 +1,18 @@
 package game;
 
+import java.util.List;
+
 import game.entities.Country;
 
-public class Order {
-    private IAction[] actions;
+public class Order<C extends Country> {
+    private List<IAction<C>> actions;
 
-    public Order(IAction[] actions) { this.actions = actions; }
+    public Order(List<IAction<C>> actions) { this.actions = actions; }
 
-    public IAction[] getActions() { return actions; }
+    public List<IAction<C>> getActions() { return actions; }
 
-    public interface IAction {
-        public void doAction(Game game);
+    public interface IAction<C extends Country> {
+        public void doAction(Game<C> game);
 
         public int price();
 
@@ -21,10 +23,10 @@ public class Order {
         public Country getCountry();
     }
 
-    public static abstract class Action implements IAction {
-        private final Country country;
+    public static abstract class Action<C extends Country> implements IAction<C> {
+        private final C country;
 
-        public Action(Country country) { this.country = country; }
+        public Action(C country) { this.country = country; }
 
         @Override
         public boolean missileRequired() { return false; }
@@ -32,7 +34,7 @@ public class Order {
         @Override
         public boolean requreNuclear() { return false; }
 
-        public Country getCountry() { return country; }
+        public C getCountry() { return country; }
 
         protected void pay() { country.pay(price()); }
     }

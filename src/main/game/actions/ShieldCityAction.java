@@ -4,7 +4,7 @@ import game.Game;
 import game.Order.Action;
 import game.entities.Country;
 
-public class ShieldCityAction extends Action {
+public class ShieldCityAction extends Action<Country> {
     private final int cityIndex;
 
     public ShieldCityAction(Country country, int cityIndex) {
@@ -13,7 +13,7 @@ public class ShieldCityAction extends Action {
     }
 
     @Override
-    public void doAction(Game game) {
+    public void doAction(Game<Country> game) {
         pay();
         getCountry().getCities()[cityIndex].setShield();
     }

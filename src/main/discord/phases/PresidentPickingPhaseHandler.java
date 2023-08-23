@@ -7,6 +7,7 @@ import discord.entities.DiscordMember;
 import discord.entities.DiscordTeam;
 import discord.entities.DiscordTeamBuilder;
 import discord.util.ServerSetupUtil;
+import game.Game;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import social_logic.Session;
@@ -33,7 +34,7 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
     public void onStringSelectInteraction(StringSelectInteractionEvent event) {
         long voter = event.getUser().getIdLong();
         long voted = Long.parseLong(event.getValues().get(0));
-        logic.vote(new DiscordMember(voter), new DiscordMember(voted));
+        logic.vote(new DiscordMember(voter), new DiscordMember(voted)); // TODO: Members storage
         event.deferEdit().queue();
         System.out.println("[" + voter + "] -> " + "[" + voted + "]");
     }
@@ -65,6 +66,8 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
     }
 
     @Override
-    public void nextPhase() { session.setPhaseHandler(new TalkingPhaseHandler(session, logic.buildTeams())); }
+    public void nextPhase() {
+        session.setPhaseHandler(new TalkingPhaseHandler(session, new Game<DiscordTeam>(logic.buildTeams())));
+    }
 
 }

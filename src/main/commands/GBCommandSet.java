@@ -13,8 +13,10 @@ import discord.phases.CollectorPhaseHandler;
 import discord.phases.IDiscordPhaseEventHandler;
 import discord.phases.TalkingPhaseHandler;
 import discord.util.ServerSetupUtil;
+import game.Game;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
@@ -48,15 +50,21 @@ public class GBCommandSet extends CommandSet {
             return;
         }
 
-        DiscordIODevice ioDevice = new DiscordIODevice(event.getJDA(), event.getGuild().getIdLong());
-        Session<DiscordIODevice, IDiscordPhaseEventHandler> session = new Session<>(ioDevice);
-        event.reply("Game created!").queue();
+        Session<DiscordIODevice, IDiscordPhaseEventHandler> session = createSession(event.getJDA(), event.getGuild());
         session.setPhaseHandler(
                 new CollectorPhaseHandler(session, event.getChannel().getIdLong(), event.getUser().getIdLong()));
+
+        event.reply("Game created!").queue();
+
+    }
+
+    private static Session<DiscordIODevice, IDiscordPhaseEventHandler> createSession(JDA jda, Guild guild) {
+        DiscordIODevice ioDevice = new DiscordIODevice(jda, guild.getIdLong());
+        jda.addEventListener(ioDevice);
+        Session<DiscordIODevice, IDiscordPhaseEventHandler> session = new Session<>(ioDevice);
         ioDevice.setSession(session);
         App.addNewSession(session);
-        event.getJDA().addEventListener(ioDevice);
-
+        return session;
     }
 
     private static void clearCommand(SlashCommandInteractionEvent event) {
@@ -99,29 +107,34 @@ public class GBCommandSet extends CommandSet {
     //
 
     private static final long ismaxisID = 292778788809474050L;
+    private static final long maksobotID = 1144015810453586072L;
     private static final long checkselfID = 219019680013221888L;
     private static final long checkselfyID = 1120024604673577113L;
     private static final DiscordMember ismaxis = new DiscordMember(ismaxisID);
+    private static final DiscordMember maksobot = new DiscordMember(maksobotID);
     private static final DiscordMember checkself = new DiscordMember(checkselfID);
     private static final DiscordMember checkselfy = new DiscordMember(checkselfyID);
 
     private static final List<DiscordTeamBuilder> builders = List.of(
-            new DiscordTeamBuilder().addMember(ismaxis).setPresident(ismaxis)
+            new DiscordTeamBuilder().setMembers(Set.of(ismaxis, checkselfy)).setPresident(ismaxis)
                     .setDescription(Constants.teamNames.get(0)),
-            new DiscordTeamBuilder().setMembers(Set.of(checkself, checkselfy)).setPresident(checkself)
+            new DiscordTeamBuilder().setMembers(Set.of(checkself, maksobot)).setPresident(maksobot)
                     .setDescription(Constants.teamNames.get(1)));
 
     private static void skipCollectorAndPickingPhase(SlashCommandInteractionEvent event) {
         event.deferReply().complete();
 
         JDA jda = event.getJDA();
-        DiscordIODevice ioDevice = new DiscordIODevice(jda, event.getGuild().getIdLong());
-        Session<DiscordIODevice, IDiscordPhaseEventHandler> session = new Session<>(ioDevice);
+
         ServerSetupUtil util = new ServerSetupUtil(jda, builders);
-        util.createChannelsAndRoles(ioDevice.getGuildId()).complete();
-        // util.sendPolls().complete();
-        session.setPhaseHandler(new TalkingPhaseHandler(session, buildTeams(builders)));
-        event.getHook().sendMessage("Collector and Picking phases skipped").setEphemeral(true).queue();
+        util.createChannelsAndRoles(event.getGuild().getIdLong()).complete();
+
+        Session<DiscordIODevice, IDiscordPhaseEventHandler> session = createSession(event.getJDA(), event.getGuild());
+        session.setPhaseHandler(new TalkingPhaseHandler(session, new Game<DiscordTeam>(buildTeams(builders))));
+
+        event.getHook().sendMessage("Collector and Picking phases skipped")
+                .setEphemeral(true).queue();
+
     }
 
     private static List<DiscordTeam> buildTeams(List<DiscordTeamBuilder> builders) {

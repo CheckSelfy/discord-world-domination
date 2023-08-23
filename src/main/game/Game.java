@@ -1,26 +1,28 @@
 package game;
 
+import java.util.List;
+
 import game.Order.IAction;
 import game.entities.*;
 
-public class Game {
-    private final Country[] countries;
+public class Game<C extends Country> {
+    private final List<C> countries;
     private int ecologyLevel = 90; // TODO: initial balance
 
-    public Game(Country[] countries) { this.countries = countries; }
+    public Game(List<C> countries) { this.countries = countries; }
 
-    public Country[] getCountries() { return countries; }
+    public List<C> getCountries() { return countries; }
 
     public int[] getAvgLifeLevel() {
-        int[] levels = new int[countries.length];
-        for (int i = 0; i < countries.length; i++) {
-            levels[i] = countries[i].getLifeLevel();
+        int[] levels = new int[countries.size()];
+        for (int i = 0; i < countries.size(); i++) {
+            levels[i] = countries.get(i).getLifeLevel();
         }
         return levels;
     }
 
-    public void acceptOrder(final Order order) {
-        for (IAction action : order.getActions()) {
+    public void acceptOrder(final Order<C> order) {
+        for (IAction<C> action : order.getActions()) {
             action.doAction(this);
         }
     }

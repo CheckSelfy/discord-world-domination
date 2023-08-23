@@ -1,10 +1,12 @@
 package game;
 
+import java.util.List;
+
 import game.Order.IAction;
 import game.actions.*;
 import game.entities.*;
 
-public class Main {
+public class GameTest {
     static final Country green = new Country("green", new City[] {
             new City("g-city1", 10),
             new City("g-city2", 20),
@@ -17,11 +19,11 @@ public class Main {
             new City("y-city3", 31),
             new City("y-city4", 41) });
 
-    static final Country[] countries = { green, yellow };
+    static final List<Country> countries = List.of(green, yellow);
 
     public static void main(String[] args) {
         try {
-            Game game = new Game(countries);
+            Game<Country> game = new Game<>(countries);
             printStat(game);
             game.acceptOrder(createOrder(new ImposeSancionsAction(yellow, green)));
             printStat(game);
@@ -49,14 +51,14 @@ public class Main {
         }
     }
 
-    private static void printStat(Game game) {
+    private static void printStat(Game<Country> game) {
         System.out.println(game);
         System.out.println();
     }
 
-    static Order createOrder(IAction... actions) {
-        var orderBuilder = new OrderBuilder();
-        for (IAction action : actions) {
+    static Order<Country> createOrder(IAction<Country>... actions) {
+        var orderBuilder = new OrderBuilder<Country>();
+        for (IAction<Country> action : actions) {
             orderBuilder.addAction(action);
         }
         return orderBuilder.build();

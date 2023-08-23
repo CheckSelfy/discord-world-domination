@@ -5,14 +5,14 @@ import java.util.ArrayList;
 import game.Order.IAction;
 import game.entities.Country;
 
-public class OrderBuilder {
+public class OrderBuilder<C extends Country> {
     private Country country = null;
     private int curBalance = 0;
     private int curMissilesCount = 0;
 
-    private ArrayList<IAction> actions = new ArrayList<IAction>();
+    private ArrayList<IAction<C>> actions = new ArrayList<IAction<C>>();
 
-    public OrderBuilder addAction(IAction action) {
+    public OrderBuilder<C> addAction(IAction<C> action) {
         if (country == null) {
             country = action.getCountry();
             curBalance = country.getBalance();
@@ -42,5 +42,5 @@ public class OrderBuilder {
         return this;
     }
 
-    public Order build() { return new Order(actions.toArray(new IAction[0])); }
+    public Order<C> build() { return new Order<>(actions); }
 }

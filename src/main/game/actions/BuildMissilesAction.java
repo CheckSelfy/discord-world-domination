@@ -4,7 +4,7 @@ import game.Game;
 import game.Order.Action;
 import game.entities.Country;
 
-public class BuildMissilesAction extends Action {
+public class BuildMissilesAction extends Action<Country> {
     private final int count;
 
     public BuildMissilesAction(Country country, int count) {
@@ -13,7 +13,7 @@ public class BuildMissilesAction extends Action {
     }
 
     @Override
-    public void doAction(Game game) {
+    public void doAction(Game<Country> game) {
         game.impactEcology(ActionsProps.buildMissilesEcoImpact() * count);
         pay();
         getCountry().addMissiles(count);
