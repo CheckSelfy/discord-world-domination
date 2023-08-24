@@ -1,10 +1,9 @@
 package game.actions;
 
 import game.Game;
-import game.Order.Action;
 import game.entities.Country;
 
-public class ImposeSancionsAction extends Action<Country> {
+public class ImposeSancionsAction extends AbAction {
     private final Country to;
 
     public ImposeSancionsAction(final Country from, final Country to) {
@@ -16,7 +15,7 @@ public class ImposeSancionsAction extends Action<Country> {
     }
 
     @Override
-    public void doAction(Game<Country> game) { to.imposeSancions(getCountry()); }
+    public void doAction(Game<? extends Country> game) { to.imposeSancions(getCountry()); }
 
     @Override
     public int price() { return ActionsProps.imposeSancionsPrice(); }

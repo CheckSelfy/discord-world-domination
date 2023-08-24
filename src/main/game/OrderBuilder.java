@@ -2,17 +2,17 @@ package game;
 
 import java.util.ArrayList;
 
-import game.Order.IAction;
+import game.actions.IAction;
 import game.entities.Country;
 
-public class OrderBuilder<C extends Country> {
+public class OrderBuilder {
     private Country country = null;
     private int curBalance = 0;
     private int curMissilesCount = 0;
 
-    private ArrayList<IAction<C>> actions = new ArrayList<IAction<C>>();
+    private ArrayList<IAction> actions = new ArrayList<IAction>();
 
-    public OrderBuilder<C> addAction(IAction<C> action) {
+    public OrderBuilder addAction(IAction action) {
         if (country == null) {
             country = action.getCountry();
             curBalance = country.getBalance();
@@ -42,5 +42,5 @@ public class OrderBuilder<C extends Country> {
         return this;
     }
 
-    public Order<C> build() { return new Order<>(actions); }
+    public Order build() { return new Order(actions); }
 }

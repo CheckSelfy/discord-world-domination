@@ -1,10 +1,9 @@
 package game.actions;
 
 import game.Game;
-import game.Order.Action;
 import game.entities.Country;
 
-public class UpgradeCityAction extends Action<Country> {
+public class UpgradeCityAction extends AbAction {
     private final int cityIndex;
 
     public UpgradeCityAction(Country country, int cityIndex) {
@@ -13,7 +12,7 @@ public class UpgradeCityAction extends Action<Country> {
     }
 
     @Override
-    public void doAction(Game<Country> game) {
+    public void doAction(Game<? extends Country> game) {
         pay();
         getCountry().getCities()[cityIndex].upgrade(ActionsProps.upgradeCityAmount());
     }

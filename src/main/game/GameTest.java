@@ -2,7 +2,6 @@ package game;
 
 import java.util.List;
 
-import game.Order.IAction;
 import game.actions.*;
 import game.entities.*;
 
@@ -23,7 +22,7 @@ public class GameTest {
 
     public static void main(String[] args) {
         try {
-            Game<Country> game = new Game<>(countries);
+            Game<? extends Country> game = new Game<>(countries);
             printStat(game);
             game.acceptOrder(createOrder(new ImposeSancionsAction(yellow, green)));
             printStat(game);
@@ -51,14 +50,14 @@ public class GameTest {
         }
     }
 
-    private static void printStat(Game<Country> game) {
+    private static void printStat(Game<? extends Country> game) {
         System.out.println(game);
         System.out.println();
     }
 
-    static Order<Country> createOrder(IAction<Country>... actions) {
-        var orderBuilder = new OrderBuilder<Country>();
-        for (IAction<Country> action : actions) {
+    static Order createOrder(IAction... actions) {
+        var orderBuilder = new OrderBuilder();
+        for (IAction action : actions) {
             orderBuilder.addAction(action);
         }
         return orderBuilder.build();

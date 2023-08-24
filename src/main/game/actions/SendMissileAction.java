@@ -1,11 +1,10 @@
 package game.actions;
 
 import game.Game;
-import game.Order.Action;
 import game.entities.City;
 import game.entities.Country;
 
-public class SendMissileAction extends Action<Country> {
+public class SendMissileAction extends AbAction {
     private final City city;
 
     public SendMissileAction(Country country, City city) {
@@ -14,7 +13,7 @@ public class SendMissileAction extends Action<Country> {
     }
 
     @Override
-    public void doAction(Game<Country> game) {
+    public void doAction(Game<? extends Country> game) {
         game.impactEcology(ActionsProps.sendMissileEcoImpact());
         getCountry().removeMissile();
         city.acceptMissile();

@@ -2,7 +2,7 @@ package game;
 
 import java.util.List;
 
-import game.Order.IAction;
+import game.actions.IAction;
 import game.entities.*;
 
 public class Game<C extends Country> {
@@ -21,8 +21,8 @@ public class Game<C extends Country> {
         return levels;
     }
 
-    public void acceptOrder(final Order<C> order) {
-        for (IAction<C> action : order.getActions()) {
+    public void acceptOrder(Order order) {
+        for (IAction action : order.getActions()) {
             action.doAction(this);
         }
     }

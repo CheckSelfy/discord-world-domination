@@ -1,10 +1,9 @@
 package game.actions;
 
 import game.Game;
-import game.Order.Action;
 import game.entities.Country;
 
-public class TransferMoneyAction extends Action<Country> {
+public class TransferMoneyAction extends AbAction {
     private final Country transferTo;
     private final int amount;
 
@@ -15,7 +14,7 @@ public class TransferMoneyAction extends Action<Country> {
     }
 
     @Override
-    public void doAction(Game<Country> game) {
+    public void doAction(Game<? extends Country> game) {
         getCountry().pay(amount);
         transferTo.recieve(amount);
     }

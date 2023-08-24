@@ -1,14 +1,13 @@
 package game.actions;
 
 import game.Game;
-import game.Order.Action;
 import game.entities.Country;
 
-public class DevelopNuclearAction extends Action<Country> {
+public class DevelopNuclearAction extends AbAction {
     public DevelopNuclearAction(Country country) { super(country); }
 
     @Override
-    public void doAction(Game<Country> game) {
+    public void doAction(Game<? extends Country> game) {
         game.impactEcology(ActionsProps.developNuclearEcoImpact());
         pay();
         getCountry().developNuclear();
