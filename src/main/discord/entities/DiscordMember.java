@@ -8,10 +8,10 @@ public class DiscordMember implements IMember {
     public DiscordMember(long userId) { this.userId = userId; }
 
     @Override
-    public long getID() { return userId; }
+    public long getId() { return userId; }
 
     @Override
-    public int hashCode() { return (int) getID(); }
+    public int hashCode() { return (int) getId(); }
 
     @Override
     public boolean equals(Object obj) {
@@ -20,7 +20,7 @@ public class DiscordMember implements IMember {
         } else if (obj == null) {
             return false;
         } else if (obj instanceof DiscordMember other) {
-            if (getID() == other.getID()) {
+            if (getId() == other.getId()) {
                 return true;
             }
         }

@@ -80,7 +80,7 @@ public class ServerSetupUtil {
         List<AuditableRestAction<Void>> actions = new ArrayList<>(members.size());
         for (IMember m : members) {
             AuditableRestAction<Void> action = role.getGuild()
-                    .addRoleToMember(jda.getUserById(m.getID()), role)
+                    .addRoleToMember(jda.getUserById(m.getId()), role)
                     .reason("Added role by World Domination Game");
             actions.add(action);
         }
@@ -106,7 +106,7 @@ public class ServerSetupUtil {
             Set<IMember> members = teamBuilders.get(i).getMembers();
             Builder menuBuilder = StringSelectMenu.create(pickPresident + i); // id of interaction
             for (IMember m : members) {
-                User user = jda.getUserById(m.getID());
+                User user = jda.getUserById(m.getId());
                 menuBuilder.addOption(user.getName(), user.getId());
             }
 
@@ -117,7 +117,7 @@ public class ServerSetupUtil {
                     .addActionRow(Button.of(ButtonStyle.PRIMARY, "proceedVotes" + i, "[DEBUG] Proceed votes"))
                     .build();
 
-            MessageCreateAction sendMessage = jda.getVoiceChannelById(teamBuilders.get(i).getProperty().voiceChatID())
+            MessageCreateAction sendMessage = jda.getVoiceChannelById(teamBuilders.get(i).getProperty().voiceChatId())
                     .sendMessage(message);
             actions.add(sendMessage);
         }
