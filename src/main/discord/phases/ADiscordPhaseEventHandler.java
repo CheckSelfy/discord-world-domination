@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.JDA;
 import social_logic.Session;
 import util.Procedure;
 
+// TODO: move time to phase logic
 public abstract class ADiscordPhaseEventHandler implements IDiscordPhaseEventHandler {
     protected final Session<DiscordIODevice, IDiscordPhaseEventHandler> session;
     private final Timer timer;

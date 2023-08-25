@@ -42,7 +42,7 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
     private final Map<Long, DiscordTeam> channelToTeam;
     private final Map<DiscordTeam, DiscordTeam> requesterToRecipient;
     private final Map<DiscordTeam, DiscordTeam> recipientToRequester;
-    private final Map<DiscordTeam, Messages> teamToMessageId;
+    private final Map<DiscordTeam, Messages> teamToMessages;
     private final Map<DiscordTeam, Long> teamToForeingAmbassadorId;
 
     private final Lock lock = new ReentrantLock(true);
@@ -63,7 +63,7 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
         channelToTeam = new HashMap<>(logic.getTeams().size());
         requesterToRecipient = new HashMap<>(logic.getTeams().size());
         recipientToRequester = new HashMap<>(logic.getTeams().size());
-        teamToMessageId = new HashMap<>(logic.getTeams().size());
+        teamToMessages = new HashMap<>(logic.getTeams().size());
         teamToForeingAmbassadorId = new HashMap<>(logic.getTeams().size());
 
         for (DiscordTeam team : logic.getTeams()) {
@@ -77,27 +77,33 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
     private RestAction<?> sendPolls(List<DiscordTeam> teams) {
         List<RestAction<?>> actions = new ArrayList<>(teams.size());
         for (int i = 0; i < teams.size(); i++) {
-            Builder menuBuilder = StringSelectMenu.create(DELEGATION_REQ + i);
-            for (int j = 0; j < teams.size(); j++) {
-                if (i == j) {
-                    continue;
-                }
-                CountryDescription desc = teams.get(j).getDescription();
-                menuBuilder.addOption(desc.getName(), String.valueOf(j), desc.getEmoji());
-            }
+            final DiscordTeam team = teams.get(i);
+            Builder menuBuilder = createSelectCountyMenu(teams, team);
 
             MessageCreateData message = new MessageCreateBuilder()
                     .setContent("Select to which country to send a delegation")
                     .addActionRow(menuBuilder.build()).build();
 
-            final DiscordTeam team = teams.get(i);
             MessageCreateAction sendMessage = getJDA()
                     .getVoiceChannelById(teams.get(i).getProperty().voiceChatId())
                     .sendMessage(message);
-            actions.add(sendMessage.onSuccess(msg -> teamToMessageId.put(team, new Messages(msg.getIdLong(), 0))));
+            actions.add(sendMessage.onSuccess(msg -> teamToMessages.put(team, new Messages(msg.getIdLong(), 0))));
 
         }
         return RestAction.allOf(actions);
+    }
+
+    private Builder createSelectCountyMenu(List<DiscordTeam> teams, DiscordTeam team) {
+        Builder menuBuilder = StringSelectMenu.create(DELEGATION_REQ);
+        for (int j = 0; j < teams.size(); j++) {
+            if (team == teams.get(j)) {
+                continue;
+            }
+            CountryDescription desc = teams.get(j).getDescription();
+            menuBuilder.addOption(desc.getName(), String.valueOf(j), desc.getEmoji());
+        }
+
+        return menuBuilder;
     }
 
     @Override
@@ -116,23 +122,23 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
         String buttonId = event.getButton().getId();
         if (buttonId.equals(acceptDelegation.getId())) {
             // Recipient side
-            editMessage(recipientChannelId, teamToMessageId.get(recipientTeam).acceptDelegationMsgId,
+            editMessage(recipientChannelId, teamToMessages.get(recipientTeam).acceptDelegationMsgId,
                     createTextReplaceMessage("Waiting for delegation..."));
 
             // Requester side
-            editMessage(requesterChannelId, teamToMessageId.get(requesterTeam).requestDelegationMsgId,
+            editMessage(requesterChannelId, teamToMessages.get(requesterTeam).requestDelegationMsgId,
                     createSelectAmbassadorMenu(requesterTeam.getMembers()));
 
         } else if (buttonId.equals(denyDelegation.getId())) {
             // Recipient side
-            Messages recipientTeamMsgs = teamToMessageId.get(recipientTeam);
+            Messages recipientTeamMsgs = teamToMessages.get(recipientTeam);
             deleteMessage(recipientChannelId, recipientTeamMsgs.acceptDelegationMsgId);
             recipientTeamMsgs.acceptDelegationMsgId = 0;
 
             // Requester side
-            editMessage(requesterChannelId, teamToMessageId.get(requesterTeam).requestDelegationMsgId,
-                    createTextReplaceMessage(
-                            recipientTeam.getDescription().getFullName() + " denied your request"));
+            editMessage(requesterChannelId, teamToMessages.get(requesterTeam).requestDelegationMsgId,
+                    createTextReplaceMessage(recipientTeam.getDescription().getFullName() + " denied your request")
+                            .setActionRow(createSelectCountyMenu(logic.getTeams(), requesterTeam).build()));
         } else if (buttonId.equals(kickDelegation.getId())) {
             endOfDelegation(requesterTeam, recipientTeam);
         }
@@ -146,7 +152,7 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
         }
         lock.unlock();
 
-        Messages recipientTeamMsgs = teamToMessageId.get(recipientTeam);
+        Messages recipientTeamMsgs = teamToMessages.get(recipientTeam);
         deleteMessage(recipientTeam.getProperty().voiceChatId(),
                 recipientTeamMsgs.acceptDelegationMsgId);
         recipientTeamMsgs.acceptDelegationMsgId = 0;
@@ -156,6 +162,10 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
         Guild guild = getJDA().getGuildById(session.getIODevice().getGuildId());
         guild.moveVoiceMember(guild.getMemberById(ambassadorId), requesterVoiceChannel).queue();
 
+    }
+
+    private void editMessage(long channelId, long msgId, MessageEditBuilder editData) {
+        editMessage(channelId, msgId, editData.build());
     }
 
     private void editMessage(long channelId, long msgId, MessageEditData editData) {
@@ -168,15 +178,19 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
         }
     }
 
-    private MessageEditData createSelectAmbassadorMenu(Set<IMember> members) {
+    private MessageEditBuilder createSelectAmbassadorMenu(Set<IMember> members) {
+        return createSelectAmbassadorMenu(new MessageEditBuilder(), members);
+    }
+
+    private MessageEditBuilder createSelectAmbassadorMenu(MessageEditBuilder builder, Set<IMember> members) {
         Builder menuBuilder = StringSelectMenu.create(SELECT_AMBASSADOR);
         for (IMember member : members) {
             User user = getJDA().getUserById(member.getId());
             menuBuilder.addOption(user.getName(), user.getId());
         }
-        return new MessageEditBuilder().setContent("Select ambassador")
-                .setActionRow(menuBuilder.build())
-                .build();
+        String content = builder.getContent();
+        return builder.setContent(content + (content.isEmpty() ? "" : "\n") + "Select ambassador")
+                .setActionRow(menuBuilder.build());
     }
 
     //
@@ -192,12 +206,8 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
 
         String menuId = event.getSelectMenu().getId();
         if (menuId.startsWith(DELEGATION_REQ)) {
-            if (requesterToRecipient.containsKey(requesterTeam)) {
-                event.getHook().sendMessage("You can send only one request per round").setEphemeral(true).queue();
-                return;
-            }
-
-            DiscordTeam recipientTeam = logic.getTeams().get(Integer.parseInt(event.getValues().get(0)));
+            int recipientTeamId = Integer.parseInt(event.getValues().get(0));
+            DiscordTeam recipientTeam = logic.getTeams().get(recipientTeamId);
             lock.lock();
             {
                 if (teamToForeingAmbassadorId.containsKey(recipientTeam)) {
@@ -206,17 +216,18 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
                 }
 
                 long acceptMessageId = getJDA().getVoiceChannelById(recipientTeam.getProperty().voiceChatId())
-                        .sendMessage(createAcceptDelegationMessage(requesterTeam.getDescription().getFullName()))
+                        .sendMessage(
+                                createAcceptDelegationMessage(requesterTeam.getDescription().getFullName()).build())
                         .complete().getIdLong();
-                teamToMessageId.get(recipientTeam).acceptDelegationMsgId = acceptMessageId;
+                teamToMessages.get(recipientTeam).acceptDelegationMsgId = acceptMessageId;
                 requesterToRecipient.put(requesterTeam, recipientTeam);
                 recipientToRequester.put(recipientTeam, requesterTeam);
             }
             lock.unlock();
 
-            event.getHook().editMessageById(teamToMessageId.get(requesterTeam).requestDelegationMsgId,
-                    createTextReplaceMessage(
-                            "You send request to: " + recipientTeam.getDescription().getFullName()))
+            event.getHook().editMessageById(teamToMessages.get(requesterTeam).requestDelegationMsgId,
+                    createTextReplaceMessage("You send request to: " + recipientTeam.getDescription().getFullName())
+                            .build())
                     .queue();
         } else if (menuId.startsWith(SELECT_AMBASSADOR)) {
             long ambassadorId = Long.parseLong(event.getValues().get(0));
@@ -228,7 +239,7 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
             lock.unlock();
 
             // Requester
-            Messages requesterTeamMsgs = teamToMessageId.get(requesterTeam);
+            Messages requesterTeamMsgs = teamToMessages.get(requesterTeam);
             deleteMessage(requesterTeam.getProperty().voiceChatId(),
                     requesterTeamMsgs.requestDelegationMsgId);
             requesterTeamMsgs.requestDelegationMsgId = 0;
@@ -240,7 +251,7 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
 
             // Recipient
             editMessage(recipientTeam.getProperty().voiceChatId(),
-                    teamToMessageId.get(recipientTeam).acceptDelegationMsgId,
+                    teamToMessages.get(recipientTeam).acceptDelegationMsgId,
                     createKickDelegationMessage());
         }
 
@@ -254,28 +265,35 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
         return true;
     }
 
-    private static MessageEditData createTextReplaceMessage(String s) {
-        return new MessageEditBuilder().setContent(s).setReplace(true).build();
+    private static MessageEditBuilder createTextReplaceMessage(String s) {
+        return createTextReplaceMessage(new MessageEditBuilder(), s);
+    }
+
+    private static MessageEditBuilder createTextReplaceMessage(MessageEditBuilder builder, String s) {
+        return builder.setContent(s).setReplace(true);
     }
 
     private static final Button acceptDelegation = Button.of(ButtonStyle.SUCCESS, "accept_delegation", "Accept");
     private static final Button denyDelegation = Button.of(ButtonStyle.DANGER, "deny_delegation", "Deny");
 
-    private MessageCreateData createAcceptDelegationMessage(String countyName) {
+    private MessageCreateBuilder createAcceptDelegationMessage(String countyName) {
         return new MessageCreateBuilder()
                 .setContent(countyName + " requests permission to delegate")
-                .addActionRow(acceptDelegation, denyDelegation)
-                .build();
+                .addActionRow(acceptDelegation, denyDelegation);
     }
 
     private static final Button kickDelegation = Button.of(ButtonStyle.DANGER, "kick_delegation", "Kick delegation");
 
-    private MessageEditData createKickDelegationMessage() {
-        return new MessageEditBuilder().setActionRow(kickDelegation).setReplace(true).build();
+    private MessageEditBuilder createKickDelegationMessage() {
+        return new MessageEditBuilder().setActionRow(kickDelegation).setReplace(true);
     }
 
     @Override
-    public void phaseEnding() {}
+    public void phaseEnding() {
+        // move all users to team channels
+        // delete all messages
+        nextPhase();
+    }
 
     @Override
     public int getDurationInMilliseconds() { return 0; }
