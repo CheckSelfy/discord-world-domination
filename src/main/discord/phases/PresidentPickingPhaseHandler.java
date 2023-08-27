@@ -10,6 +10,10 @@ import discord.util.ServerSetupUtil;
 import game.Game;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import social_logic.Session;
 import social_logic.phases.handlers_interfaces.IPresidentPickingPhaseEventHandler;
 import social_logic.phases.logic.PresidentPickingPhaseLogic;
@@ -27,7 +31,25 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         ServerSetupUtil util = new ServerSetupUtil(getJDA(), builders);
         util.createChannelsAndRoles(session.getIODevice().getGuildId()).complete();
         util.sendPolls().complete();
+
+        // TODO: remove debug button
+        {
+            MessageCreateData message = new MessageCreateBuilder()
+                    .addActionRow(Button.of(ButtonStyle.PRIMARY, "proceed_votes", "[DEBUG] Proceed votes"))
+                    .build();
+            getJDA().getVoiceChannelById(builders.get(0).getProperty().voiceChatId())
+                    .sendMessage(message).complete();
+        }
+
         scheduleEnd();
+    }
+
+    // TODO: remove debug button
+    @Override
+    public void onButtonInteraction(ButtonInteractionEvent event) {
+        event.deferEdit().queue();
+        cancelTimer();
+        phaseEnding();
     }
 
     @Override
@@ -55,14 +77,6 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         }
         getJDA().getTextChannelById(1125882793331785783L).sendMessage(sb.toString()).queue();
         System.out.println("Ended pres-picking.");
-    }
-
-    // TODO: remove debug button
-    @Override
-    public void onButtonInteraction(ButtonInteractionEvent event) {
-        event.deferEdit().queue();
-        cancelTimer();
-        phaseEnding();
     }
 
     @Override

@@ -72,6 +72,15 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
 
         // UI
         sendPolls(logic.getTeams()).complete();
+
+        // TODO: remove debug button
+        {
+            MessageCreateData message = new MessageCreateBuilder()
+                    .addActionRow(Button.of(ButtonStyle.PRIMARY, "next_phase", "[DEBUG] Next phase"))
+                    .build();
+            getJDA().getVoiceChannelById(logic.getTeams().get(0).getProperty().voiceChatId())
+                    .sendMessage(message).complete();
+        }
     }
 
     private RestAction<?> sendPolls(List<DiscordTeam> teams) {
@@ -141,6 +150,11 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
                             .setActionRow(createSelectCountyMenu(logic.getTeams(), requesterTeam).build()));
         } else if (buttonId.equals(kickDelegation.getId())) {
             endOfDelegation(requesterTeam, recipientTeam);
+        }
+        // TODO: remove debug button
+        else if (buttonId.equals("next_phase")) {
+            cancelTimer();
+            phaseEnding();
         }
     }
 
@@ -225,6 +239,7 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
             }
             lock.unlock();
 
+            // Requester
             event.getHook().editMessageById(teamToMessages.get(requesterTeam).requestDelegationMsgId,
                     createTextReplaceMessage("You send request to: " + recipientTeam.getDescription().getFullName())
                             .build())
@@ -290,8 +305,25 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
 
     @Override
     public void phaseEnding() {
-        // move all users to team channels
-        // delete all messages
+        Guild guild = getJDA().getGuildById(session.getIODevice().getGuildId());
+        for (DiscordTeam team : logic.getTeams()) {
+            VoiceChannel voiceChannel = getJDA().getVoiceChannelById(team.getProperty().voiceChatId());
+            for (IMember member : team.getMembers()) {
+                try {
+                    guild.moveVoiceMember(guild.getMemberById(member.getId()), voiceChannel).queue();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        for (var teamMessages : teamToMessages.entrySet()) {
+            if (teamMessages.getValue() != null) {
+                deleteMessage(teamMessages.getKey().getProperty().voiceChatId(),
+                        teamMessages.getValue().requestDelegationMsgId);
+                deleteMessage(teamMessages.getKey().getProperty().voiceChatId(),
+                        teamMessages.getValue().acceptDelegationMsgId);
+            }
+        }
         nextPhase();
     }
 

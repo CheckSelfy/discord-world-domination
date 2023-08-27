@@ -13,8 +13,6 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu.Builder;
 import net.dv8tion.jda.api.requests.RestAction;
@@ -113,8 +111,6 @@ public class ServerSetupUtil {
             MessageCreateData message = new MessageCreateBuilder()
                     .setContent("Pick your president!")
                     .addActionRow(menuBuilder.build())
-                    // TODO: remove debug button
-                    .addActionRow(Button.of(ButtonStyle.PRIMARY, "proceedVotes" + i, "[DEBUG] Proceed votes"))
                     .build();
 
             MessageCreateAction sendMessage = jda.getVoiceChannelById(teamBuilders.get(i).getProperty().voiceChatId())
