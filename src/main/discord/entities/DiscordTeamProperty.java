@@ -1,7 +1,7 @@
 package discord.entities;
 
 public record DiscordTeamProperty(
-        long voiceChatID,
-        long roleID) {
+        long voiceChatId,
+        long roleId) {
 
 }

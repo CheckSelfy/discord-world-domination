@@ -51,7 +51,7 @@ public class PresidentPickingPhaseHandler extends ADiscordPhaseEventHandler
         for (int i = 0; i < logic.getTeamCount(); i++) {
             DiscordTeamBuilder t = logic.getTeamBuilder(i);
             sb.append(t.getDescription().getFullName()).append(": ");
-            sb.append(getJDA().getUserById(t.getPresident().getID()).getName()).append("\n");
+            sb.append(getJDA().getUserById(t.getPresident().getId()).getName()).append("\n");
         }
         getJDA().getTextChannelById(1125882793331785783L).sendMessage(sb.toString()).queue();
         System.out.println("Ended pres-picking.");

@@ -7,11 +7,12 @@ import social_logic.entities.Team;
 import social_logic.phases.handlers_interfaces.ITalkingPhaseEventHandler;
 
 public class TalkingPhaseLogic<T extends Team> {
-    private final ITalkingPhaseEventHandler handler;
+    // private final ITalkingPhaseEventHandler handler;
+
     private final Game<T> game;
 
     public TalkingPhaseLogic(ITalkingPhaseEventHandler handler, Game<T> game) {
-        this.handler = handler;
+        // this.handler = handler;
         this.game = game;
     }
 

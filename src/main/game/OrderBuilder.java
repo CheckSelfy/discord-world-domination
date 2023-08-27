@@ -1,6 +1,7 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import game.actions.IAction;
 import game.entities.Country;
@@ -10,7 +11,7 @@ public class OrderBuilder {
     private int curBalance = 0;
     private int curMissilesCount = 0;
 
-    private ArrayList<IAction> actions = new ArrayList<IAction>();
+    private List<IAction> actions = new ArrayList<IAction>();
 
     public OrderBuilder addAction(IAction action) {
         if (country == null) {
