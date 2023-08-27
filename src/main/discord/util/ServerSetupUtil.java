@@ -29,8 +29,6 @@ public class ServerSetupUtil {
     private final JDA jda;
     private final List<DiscordTeamBuilder> teamBuilders;
 
-    private static final String pickPresident = "votePresident";
-
     public ServerSetupUtil(JDA jda, List<DiscordTeamBuilder> teamBuilders) {
         this.jda = jda;
         this.teamBuilders = teamBuilders;
@@ -98,18 +96,20 @@ public class ServerSetupUtil {
                         0);
     }
 
+    private static final String choosePresident = "choose_president";
+
     public RestAction<?> sendPolls() {
         List<MessageCreateAction> actions = new ArrayList<>(teamBuilders.size());
         for (int i = 0; i < teamBuilders.size(); i++) {
             Set<IMember> members = teamBuilders.get(i).getMembers();
-            Builder menuBuilder = StringSelectMenu.create(pickPresident + i); // id of interaction
+            Builder menuBuilder = StringSelectMenu.create(choosePresident + i);
             for (IMember m : members) {
                 User user = jda.getUserById(m.getId());
                 menuBuilder.addOption(user.getName(), user.getId());
             }
 
             MessageCreateData message = new MessageCreateBuilder()
-                    .setContent("Pick your president!")
+                    .setContent("Choose your president!")
                     .addActionRow(menuBuilder.build())
                     .build();
 

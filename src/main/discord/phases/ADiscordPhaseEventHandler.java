@@ -20,7 +20,7 @@ public abstract class ADiscordPhaseEventHandler implements IDiscordPhaseEventHan
 
     protected void scheduleEnd() { schedule(this::phaseEnding, getDurationInMilliseconds()); }
 
-    private void schedule(Procedure f, int timeInMilliSeconds) {
+    protected void schedule(Procedure f, int timeInMilliSeconds) {
         timer.schedule(new TimerTask() {
             @Override
             public void run() { f.execute(); }

@@ -73,6 +73,8 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
         // UI
         sendPolls(logic.getTeams()).complete();
 
+        moveAllToTeamChannels();
+
         // TODO: remove debug button
         {
             MessageCreateData message = new MessageCreateBuilder()
@@ -124,11 +126,18 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
             return;
         }
 
+        // TODO: remove debug button
+        String buttonId = event.getButton().getId();
+        if (buttonId.equals("next_phase")) {
+            cancelTimer();
+            phaseEnding();
+            return;
+        }
+
         long recipientChannelId = recipientTeam.getProperty().voiceChatId();
         DiscordTeam requesterTeam = recipientToRequester.get(recipientTeam);
         long requesterChannelId = requesterTeam.getProperty().voiceChatId();
 
-        String buttonId = event.getButton().getId();
         if (buttonId.equals(acceptDelegation.getId())) {
             // Recipient side
             editMessage(recipientChannelId, teamToMessages.get(recipientTeam).acceptDelegationMsgId,
@@ -150,11 +159,6 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
                             .setActionRow(createSelectCountyMenu(logic.getTeams(), requesterTeam).build()));
         } else if (buttonId.equals(kickDelegation.getId())) {
             endOfDelegation(requesterTeam, recipientTeam);
-        }
-        // TODO: remove debug button
-        else if (buttonId.equals("next_phase")) {
-            cancelTimer();
-            phaseEnding();
         }
     }
 
@@ -305,16 +309,7 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
 
     @Override
     public void phaseEnding() {
-        Guild guild = getJDA().getGuildById(session.getIODevice().getGuildId());
-        for (DiscordTeam team : logic.getTeams()) {
-            VoiceChannel voiceChannel = getJDA().getVoiceChannelById(team.getProperty().voiceChatId());
-            for (IMember member : team.getMembers()) {
-                try {
-                    guild.moveVoiceMember(guild.getMemberById(member.getId()), voiceChannel).queue();
-                } catch (Exception ignored) {
-                }
-            }
-        }
+        moveAllToTeamChannels();
 
         for (var teamMessages : teamToMessages.entrySet()) {
             if (teamMessages.getValue() != null) {
@@ -327,10 +322,26 @@ public class TalkingPhaseHandler extends ADiscordPhaseEventHandler
         nextPhase();
     }
 
+    private void moveAllToTeamChannels() {
+        Guild guild = getJDA().getGuildById(session.getIODevice().getGuildId());
+        for (DiscordTeam team : logic.getTeams()) {
+            VoiceChannel voiceChannel = getJDA().getVoiceChannelById(team.getProperty().voiceChatId());
+            for (IMember member : team.getMembers()) {
+                try {
+                    guild.moveVoiceMember(guild.getMemberById(member.getId()), voiceChannel).queue();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+    }
+
     @Override
     public int getDurationInMilliseconds() { return 0; }
 
     @Override
-    public void nextPhase() {}
+    public void nextPhase() {
+        System.out.println("Next phase: SummitPhase");
+        session.setPhaseHandler(new SummitPhaseHandler(session, logic.getGame()));
+    }
 
 }
