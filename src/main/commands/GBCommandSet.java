@@ -11,6 +11,7 @@ import discord.entities.DiscordTeam;
 import discord.entities.DiscordTeamBuilder;
 import discord.phases.CollectorPhaseHandler;
 import discord.phases.IDiscordPhaseEventHandler;
+import discord.phases.OrderPhaseEventHandler;
 import discord.phases.TalkingPhaseHandler;
 import discord.util.ServerSetupUtil;
 import game.Game;
@@ -133,7 +134,25 @@ public class GBCommandSet extends CommandSet {
         util.createChannelsAndRoles(event.getGuild().getIdLong()).complete();
 
         Session<DiscordIODevice, IDiscordPhaseEventHandler> session = createSession(event.getJDA(), event.getGuild());
-        session.setPhaseHandler(new TalkingPhaseHandler(session, new Game<DiscordTeam>(buildTeams(builders))));
+
+        Game<DiscordTeam> game = new Game<>(buildTeams(builders));
+        DiscordTeam red = game.getCountries().get(0);
+        DiscordTeam blue = game.getCountries().get(1);
+        DiscordTeam green = game.getCountries().get(2);
+
+        red.getCities()[1].acceptMissile();
+        red.getCities()[2].acceptMissile();
+        red.imposeSancions(blue);
+        red.imposeSancions(green);
+
+        blue.getCities()[0].acceptMissile();
+        blue.developNuclear();
+        blue.imposeSancions(green);
+
+        green.developNuclear();
+        green.addMissiles(3);
+
+        session.setPhaseHandler(new OrderPhaseEventHandler(session, game));
 
         event.getHook().sendMessage("Collector and Picking phases skipped")
                 .setEphemeral(true).queue();

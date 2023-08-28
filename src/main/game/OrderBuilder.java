@@ -2,16 +2,18 @@ package game;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 import game.actions.IAction;
 import game.entities.Country;
 
+// Invariant: everytime Order is correct.
 public class OrderBuilder {
     private Country country = null;
     private int curBalance = 0;
     private int curMissilesCount = 0;
 
-    private List<IAction> actions = new ArrayList<IAction>();
+    private final List<IAction> actions = new ArrayList<IAction>();
 
     public OrderBuilder addAction(IAction action) {
         if (country == null) {
@@ -44,4 +46,8 @@ public class OrderBuilder {
     }
 
     public Order build() { return new Order(actions); }
+
+    public int getBalance() { return curBalance; }
+
+    public Iterator<IAction> iterator() { return actions.iterator(); }
 }
