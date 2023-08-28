@@ -1,4 +1,5 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'java'
     id 'application'
 }
@@ -14,9 +15,20 @@ sourceSets {
         java {
             srcDirs = ['src/main']
         }
+        resources {
+            srcDirs = ["src/main/"]
+        }
     }
 }
 
 application {
     mainClass = 'app.App'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'app.App'
+        )
+    }
 }

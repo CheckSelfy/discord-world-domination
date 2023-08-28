@@ -27,13 +27,8 @@ public class Constants {
             e.printStackTrace();
         }
 
-        try {
-            bundle = ResourceBundle.getBundle("languages/lang",
-                    new Locale.Builder().setLanguage(properties.getProperty("locale")).build());
-        } catch (Throwable e) {
-            e.printStackTrace();
-            throw e;
-        }
+        bundle = ResourceBundle.getBundle("languages/lang",
+                new Locale.Builder().setLanguage(properties.getProperty("locale")).build());
 
         teamNames = new ArrayList<>(COUNTRIES_COUNT);
 
