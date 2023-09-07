@@ -1,12 +1,13 @@
 plugins {
-    id('java-library')
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'java'
+    id 'application'
 }
 
 repositories { mavenCentral() }
 dependencies { 
-    implementation "net.dv8tion:JDA:5.0.0-beta.12" 
-                    //    exclude module: 'opus-java'
-                //    }
+    implementation "net.dv8tion:JDA:5.0.0-beta.13" 
+    implementation "ch.qos.logback:logback-classic:1.2.8"
 }
 
 sourceSets {
@@ -14,5 +15,20 @@ sourceSets {
         java {
             srcDirs = ['src/main']
         }
+        resources {
+            srcDirs = ["src/main/"]
+        }
+    }
+}
+
+application {
+    mainClass = 'app.App'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'app.App'
+        )
     }
 }

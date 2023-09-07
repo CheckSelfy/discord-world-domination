@@ -40,9 +40,7 @@ public class CommandSet {
         return -1;
     }
 
-    public boolean check(String commandId) {
-        return getCommandDataIndex(commandId) != -1;
-    }
+    public boolean check(String commandId) { return getCommandDataIndex(commandId) != -1; }
 
     public void accept(SlashCommandInteractionEvent event) {
         int index = getCommandDataIndex(event.getName());
@@ -51,7 +49,5 @@ public class CommandSet {
         }
     }
 
-    public void updateCommands(JDA jda) {
-        jda.updateCommands().addCommands(commands).queue();
-    }
+    public void updateCommands(JDA jda) { jda.updateCommands().addCommands(commands).queue(); }
 }

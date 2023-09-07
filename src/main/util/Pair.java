@@ -6,21 +6,13 @@ public class Pair<First, Second> {
         this.second = second;
     }
 
-    public First getFirst() {
-        return first;
-    }
+    public First getFirst() { return first; }
 
-    public void setFirst(First first) {
-        this.first = first;
-    }
+    public void setFirst(First first) { this.first = first; }
 
-    public Second getSecond() {
-        return second;
-    }
+    public Second getSecond() { return second; }
 
-    public void setSecond(Second second) {
-        this.second = second;
-    }
+    public void setSecond(Second second) { this.second = second; }
 
     First first;
     Second second;
