@@ -85,6 +85,10 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
 
         event.deferEdit().queue();
 
+        if (phaseEnded) {
+            return;
+        }
+
         lock.lock();
         if (!hasRepeaterUsers()) {
             MessageEditData changes = new MessageEditBuilder().setComponents().setEmbeds(buildEmbedWithUsers(false))
@@ -146,6 +150,7 @@ public class CollectorPhaseHandler extends ADiscordPhaseEventHandler
 
         lock.lock();
         if (phaseEnded) {
+            lock.unlock();
             return;
         }
 
