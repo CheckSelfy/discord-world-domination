@@ -50,11 +50,11 @@ public class GBCommandSet extends CommandSet {
             return;
         }
 
+        event.reply("Game is creating now!").queue();
+
         Session<DiscordIODevice, IDiscordPhaseEventHandler> session = createSession(event.getJDA(), event.getGuild());
         session.setPhaseHandler(
                 new CollectorPhaseHandler(session, event.getChannel().getIdLong(), event.getUser().getIdLong()));
-
-        event.reply("Game created!").queue();
 
     }
 
