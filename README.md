@@ -1,6 +1,6 @@
-# discord-world-domination 
+# 🌍 World Domination Discord Game
 
-lores ipsum lores ipsum. blah-blah
+Mafia-like game for big companies. The goal is make your country's standard of living the highest above other. Main ways to do that is communicate with other teams.
 
-## Running the bot
-You must create bot blah-blah. Make the guilds blah-blah. Put your token in `token.txt` blah-blah. Run blah-blah.
+## 🏃 Running the bot
+:TODO:
